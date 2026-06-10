@@ -194,7 +194,6 @@
   }
   .theme-toggle:hover{color:var(--text);}
   .theme-toggle svg{width:18px; height:18px; display:block;}
-  #settings-btn svg{width:17px; height:17px;}
   .hdr-title .eyebrow{margin-bottom:2px;}
   header .bike{font-family:var(--font-display); font-weight:600; font-size:1.12rem; letter-spacing:-.01em; line-height:1.05;}
   header .bike span{color:var(--faint); font-weight:400; letter-spacing:0; font-size:.82em;}
@@ -369,27 +368,21 @@
   .status.err{color:var(--warn);}
   .status.ok{color:var(--accent);}
 
-  /* ---------- THEME PICKER (settings) ---------- */
-  .skin-menu-wrap{position:relative; display:inline-flex;}
-  .skin-menu{
-    position:absolute; top:calc(100% + 6px); right:0; z-index:40;
-    min-width:208px; background:var(--panel);
-    border:1px solid var(--line); border-radius:12px;
-    box-shadow:0 12px 32px rgba(0,0,0,.28); padding:5px; display:none;
-  }
-  .skin-menu[data-open="true"]{display:block;}
-  .skin-menu button{
+  /* ---------- SETTINGS PAGE ---------- */
+  .set-group{margin-bottom:26px;}
+  .set-group > .eyebrow{display:block; margin-bottom:12px;}
+  .skin-picker{display:flex; flex-direction:column; gap:8px;}
+  .skin-picker button{
     display:flex; align-items:center; gap:10px; width:100%;
-    background:none; border:none; color:var(--text);
-    padding:10px 12px; border-radius:8px; cursor:pointer;
-    font-family:var(--font-ui); font-weight:500; font-size:.9rem; text-align:left;
+    background:var(--panel); color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:12px 14px; cursor:pointer;
+    font-family:var(--font-ui); font-weight:500; font-size:.92rem; text-align:left;
   }
-  .skin-menu button:hover{background:var(--panel-2);}
-  .skin-menu button[aria-pressed="true"]{color:var(--accent);}
-  .skin-menu .swatches{display:inline-flex; gap:3px; flex:none;}
-  .skin-menu .swatches i{width:13px; height:13px; border-radius:50%; border:1px solid var(--line);}
-  .skin-menu .check{margin-left:auto; visibility:hidden;}
-  .skin-menu button[aria-pressed="true"] .check{visibility:visible;}
+  .skin-picker button[aria-pressed="true"]{border-color:var(--accent); color:var(--accent);}
+  .skin-picker .swatches{display:inline-flex; gap:3px; flex:none;}
+  .skin-picker .swatches i{width:13px; height:13px; border-radius:50%; border:1px solid var(--line);}
+  .skin-picker .check{margin-left:auto; visibility:hidden;}
+  .skin-picker button[aria-pressed="true"] .check{visibility:visible;}
 
   /* ---------- SIGN-IN GATE ---------- */
   #gate{
@@ -481,18 +474,7 @@
     <div class="bike">Rebel 500 <span>· 27D8941</span></div>
   </div>
   <div class="right">
-    <button class="theme-toggle" id="settings-btn" aria-label="Settings and sync"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.14.24.42.34.61.22l2.49-1c.52.39 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.19.12.47.02.61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg></button>
     <button class="theme-toggle" id="theme-toggle" aria-label="Switch between day and night view"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8 8 0 0 1-9.45-9.45A1 1 0 0 0 9.36 2 10 10 0 1 0 22 14.64a1 1 0 0 0-.36-1.64z"/></svg></button>
-    <div class="skin-menu-wrap">
-      <button class="theme-toggle" id="skin-trigger" aria-label="Choose theme" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2" width="9" height="9"/><rect x="7" y="7" width="9" height="9" fill="currentColor"/></svg></button>
-      <div class="skin-menu" id="skin-menu" role="menu" data-open="false">
-        <button role="menuitem" data-skin-pick="gauge" aria-pressed="true"><span class="swatches" aria-hidden="true"><i style="background:#16181B"></i><i style="background:#ECEAE6"></i><i style="background:#E01E37"></i></span><span>Dark Gauge</span><span class="check" aria-hidden="true">✓</span></button>
-        <button role="menuitem" data-skin-pick="editorial" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#FAF6EF"></i><i style="background:#2A1F1A"></i><i style="background:#8B2D29"></i></span><span>Warm Editorial</span><span class="check" aria-hidden="true">✓</span></button>
-        <button role="menuitem" data-skin-pick="roadster" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#F3EDDF"></i><i style="background:#1C1813"></i><i style="background:#A52A22"></i></span><span>Vintage Roadster</span><span class="check" aria-hidden="true">✓</span></button>
-        <button role="menuitem" data-skin-pick="swiss" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#FFFFFF"></i><i style="background:#000000"></i><i style="background:#CE1B1B"></i></span><span>Swiss</span><span class="check" aria-hidden="true">✓</span></button>
-        <button role="menuitem" data-skin-pick="instrument" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#FFFFFF"></i><i style="background:#2165A8"></i><i style="background:#0A0F14"></i></span><span>Instrument</span><span class="check" aria-hidden="true">✓</span></button>
-      </div>
-    </div>
   </div>
 </header>
 
@@ -529,6 +511,30 @@
   <section class="screen" id="screen-history">
     <div id="history-list"></div>
   </section>
+
+  <!-- SETTINGS -->
+  <section class="screen" id="screen-settings">
+    <section class="set-group">
+      <span class="eyebrow">Account</span>
+      <div class="hint" id="sync-account"></div>
+      <button class="btn block danger" id="sync-disconnect" style="display:none; margin-top:6px;">Sign Out on This Device</button>
+    </section>
+    <section class="set-group">
+      <span class="eyebrow">Sync</span>
+      <div class="status" id="sync-status"></div>
+      <div class="row" style="margin-top:8px;"><button class="btn" id="sync-now">Sync Now</button></div>
+    </section>
+    <section class="set-group">
+      <span class="eyebrow">Theme</span>
+      <div class="skin-picker" id="skin-list">
+        <button data-skin-pick="gauge" aria-pressed="true"><span class="swatches" aria-hidden="true"><i style="background:#16181B"></i><i style="background:#ECEAE6"></i><i style="background:#E01E37"></i></span><span>Dark Gauge</span><span class="check" aria-hidden="true">✓</span></button>
+        <button data-skin-pick="editorial" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#FAF6EF"></i><i style="background:#2A1F1A"></i><i style="background:#8B2D29"></i></span><span>Warm Editorial</span><span class="check" aria-hidden="true">✓</span></button>
+        <button data-skin-pick="roadster" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#F3EDDF"></i><i style="background:#1C1813"></i><i style="background:#A52A22"></i></span><span>Vintage Roadster</span><span class="check" aria-hidden="true">✓</span></button>
+        <button data-skin-pick="swiss" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#FFFFFF"></i><i style="background:#000000"></i><i style="background:#CE1B1B"></i></span><span>Swiss</span><span class="check" aria-hidden="true">✓</span></button>
+        <button data-skin-pick="instrument" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#FFFFFF"></i><i style="background:#2165A8"></i><i style="background:#0A0F14"></i></span><span>Instrument</span><span class="check" aria-hidden="true">✓</span></button>
+      </div>
+    </section>
+  </section>
 </main>
 
 <nav>
@@ -544,28 +550,11 @@
     <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M82.063,22.284h-0.006c-0.029-0.874-0.734-1.573-1.612-1.589v-0.003h-3.36l-0.001,60.404l0.001,0.01 c0,0.9-0.721,1.627-1.617,1.644v0.005l-50.906-0.002c-0.816,0-1.488-0.595-1.619-1.375v-3.602h47.405v-0.003 c0.011,0,0.021,0.003,0.031,0.003c0.91,0,1.646-0.735,1.646-1.646c0-0.006-0.002-0.012-0.002-0.012l0.002-62.202 c0-0.91-0.736-1.647-1.646-1.646c-0.01,0-0.02,0.003-0.03,0.003v-0.004h-5.756v13.022v16.291v5.639 c0,0.434-0.353,0.785-0.787,0.785c-0.228,0-0.429-0.101-0.573-0.255l-5.667-5.667h-0.019c-0.126-0.145-0.306-0.241-0.513-0.241 c-0.207,0-0.387,0.096-0.513,0.241h-0.019l-5.709,5.709h-0.009c-0.14,0.13-0.325,0.214-0.532,0.214 c-0.434,0-0.786-0.352-0.786-0.785v-5.639V25.292V12.27l-29.883,0c-0.91,0-1.646,0.736-1.646,1.646 c0,0.021,0.006,0.042,0.006,0.063l0,59.237v12.807c-0.001,0.02-0.006,0.039-0.006,0.059s0.005,0.039,0.006,0.059v0.076h0.008 c0.07,0.845,0.769,1.511,1.632,1.511v0.001l60.833,0.002h0.029v-0.003c0.896-0.016,1.617-0.743,1.617-1.643l-0.001-0.01 L82.063,22.284z"/></svg>
     History
   </button>
+  <button class="tab" data-screen="settings" aria-label="Settings">
+    <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M88.553,43.441l-10.276-1.013c-0.661-2.466-1.644-4.832-2.936-7.059l6.561-7.993c0.703-0.859,0.639-2.111-0.145-2.893 l-6.24-6.243c-0.42-0.419-0.97-0.633-1.525-0.633c-0.485,0-0.97,0.162-1.369,0.491L64.63,24.66 c-2.231-1.293-4.596-2.276-7.06-2.936l-1.011-10.278C56.45,10.342,55.522,9.5,54.412,9.5h-8.823c-1.11,0-2.038,0.842-2.148,1.946 L42.43,21.727c-2.464,0.66-4.829,1.643-7.054,2.936l-7.998-6.564c-0.4-0.329-0.884-0.49-1.369-0.49 c-0.555,0-1.105,0.212-1.525,0.633l-6.24,6.241c-0.784,0.782-0.848,2.037-0.145,2.893l6.566,7.996 c-1.291,2.225-2.277,4.59-2.936,7.057l-10.281,1.013C10.343,43.547,9.5,44.477,9.5,45.587v8.825c0,1.11,0.843,2.04,1.947,2.146 l10.281,1.013c0.659,2.466,1.644,4.829,2.936,7.054l-6.562,7.994c-0.708,0.858-0.648,2.111,0.14,2.895l6.24,6.242 c0.42,0.418,0.97,0.631,1.525,0.631c0.485,0,0.97-0.162,1.369-0.489l7.993-6.562c2.231,1.293,4.59,2.276,7.06,2.938l1.011,10.279 c0.109,1.104,1.038,1.946,2.148,1.946h8.823c1.11,0,2.039-0.842,2.148-1.946l1.011-10.278c2.469-0.66,4.829-1.643,7.06-2.939 l7.993,6.562c0.4,0.327,0.884,0.489,1.369,0.489c0.555,0,1.105-0.213,1.525-0.631l6.24-6.242c0.788-0.783,0.848-2.037,0.14-2.895 l-6.557-7.991c1.292-2.228,2.275-4.591,2.936-7.057l10.276-1.013c1.104-0.109,1.947-1.036,1.947-2.146v-8.825 C90.5,44.477,89.657,43.55,88.553,43.441z M50.002,61.95c-6.603,0-11.953-5.351-11.953-11.95c0-6.602,5.351-11.951,11.953-11.951 c6.598,0,11.948,5.349,11.948,11.951C61.951,56.599,56.6,61.95,50.002,61.95z"/></svg>
+    Settings
+  </button>
 </nav>
-
-<!-- ---------- SETTINGS / BACKUP / SYNC SHEET ---------- -->
-<div class="overlay" id="settings-overlay">
-  <div class="sheet" role="dialog" aria-label="Settings">
-    <div class="sheet-head">
-      <span class="title">Settings</span>
-      <button class="sheet-close" data-close-settings aria-label="Close">✕</button>
-    </div>
-
-    <section>
-      <span class="eyebrow">Account</span>
-      <div class="hint" id="sync-account" style="margin-bottom:10px;"></div>
-      <div class="row">
-        <button class="btn" id="sync-now">Sync Now</button>
-      </div>
-      <button class="btn block danger" id="sync-disconnect" style="margin-top:8px; display:none;">Sign Out on This Device</button>
-      <div class="status" id="sync-status"></div>
-    </section>
-
-  </div>
-</div>
 
 <!-- ---------- SIGN-IN GATE ----------
      The app is online-first: it starts gated and unlocks only after a sync
@@ -897,6 +886,7 @@ $$('.tab').forEach(t => t.addEventListener('click', () => {
   $$('.screen').forEach(x => x.classList.remove('active'));
   t.classList.add('active');
   $('#screen-' + t.dataset.screen).classList.add('active');
+  if (t.dataset.screen === 'settings') refreshSyncUI();
 }));
 
 /* ---------- SERVICE: tap to expand, "Done" resets the interval ---------- */
@@ -972,9 +962,7 @@ function showOverlay(sel){ $(sel).classList.add('show'); }
 function hideOverlay(sel){ $(sel).classList.remove('show'); }
 // Tap the dim backdrop (but not the sheet) to close.
 $$('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); }));
-$('[data-close-settings]').addEventListener('click', () => hideOverlay('#settings-overlay'));
 $('[data-close-edit]').addEventListener('click', () => hideOverlay('#edit-overlay'));
-$('#settings-btn').addEventListener('click', () => { refreshSyncUI(); showOverlay('#settings-overlay'); });
 
 /* ---------- CLOUD SYNC ----------
    Identity is a Google account via the OAuth redirect flow: the gate's
@@ -1138,7 +1126,6 @@ $('#sync-disconnect').addEventListener('click', async () => {
   state = emptyState();
   appUnlocked = false;
   render();
-  hideOverlay('#settings-overlay');
   setGateStatus('', '');
   refreshSyncUI();
 });
@@ -1186,21 +1173,11 @@ function applySkin(name){
   skin = name;
   localStorage.setItem(SKIN_KEY, name);
   document.documentElement.dataset.skin = name;
-  $$('#skin-menu [data-skin-pick]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.skinPick === name)));
+  $$('#skin-list [data-skin-pick]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.skinPick === name)));
   applyTheme();
 }
-const skinTrigger = $('#skin-trigger'), skinMenu = $('#skin-menu');
-function setSkinMenu(open){
-  skinMenu.setAttribute('data-open', String(open));
-  skinTrigger.setAttribute('aria-expanded', String(open));
-}
-skinTrigger.addEventListener('click', e => {
-  e.stopPropagation();
-  setSkinMenu(skinMenu.getAttribute('data-open') !== 'true');
-});
-$$('#skin-menu [data-skin-pick]').forEach(btn =>
-  btn.addEventListener('click', () => { applySkin(btn.dataset.skinPick); setSkinMenu(false); }));
-document.addEventListener('click', e => { if (!e.target.closest('.skin-menu-wrap')) setSkinMenu(false); });
+$$('#skin-list [data-skin-pick]').forEach(btn =>
+  btn.addEventListener('click', () => applySkin(btn.dataset.skinPick)));
 mqLight.addEventListener('change', applyTheme); // only bites when no override
 $('#theme-toggle').addEventListener('click', () => {
   const light = document.documentElement.classList.contains('light');
