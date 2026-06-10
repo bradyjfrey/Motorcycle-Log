@@ -10,7 +10,8 @@ One static page, no framework, no build step for the page itself.
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | The whole app (UI + logic), extended from the original mockup |
+| `index.html` | The app markup + logic |
+| `style.css` | All styling, including the five-theme system (loaded with a no-flash head script that sets the theme before first paint) |
 | `manifest.webmanifest`, `sw.js`, `icons/` | PWA: installable; the service worker only speeds up shell loads |
 | `netlify/functions/state.mjs` | Cloud sync endpoint (`/api/state`) backed by Netlify Blobs |
 | `netlify/functions/auth.mjs` | Google sign-in (`/api/auth/google`) and logout endpoints |

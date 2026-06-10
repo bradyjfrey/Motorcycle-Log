@@ -1,8 +1,8 @@
 /* Motorcycle Log service worker, deliberately tiny.
    Stale-while-revalidate for the static shell; the sync API is never cached. */
-const CACHE = 'odo-v1';
+const CACHE = 'odo-v2';
 const ASSETS = [
-  '/', '/index.html', '/manifest.webmanifest',
+  '/', '/index.html', '/style.css', '/manifest.webmanifest',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png',
 ];
 

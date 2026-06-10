@@ -1,0 +1,449 @@
+  /* =====================================================================
+     THEME SYSTEM
+     Three skins (Dark Gauge / Warm Editorial / Vintage Roadster), each with
+     a night (default) and day (.light) variant. Skins set tokens only; the
+     component rules below consume them. html[data-skin] is set by JS from
+     localStorage before first paint of the app screens.
+     ===================================================================== */
+
+  /* ---- Dark Gauge (default): neutral graphite, one red accent, Inter. */
+  :root{
+    --bg:#16181B; --panel:#1E2125; --panel-2:#24272C; --line:#2A2D31;
+    --card-line:#2A2D31; --card-shadow:none;
+    --well:#101214; --nav-bg:rgba(22,24,27,.96);
+    --text:#ECEAE6; --dim:#9BA0A6; --faint:#6E747B; --label:#8A9098;
+    --accent:#E01E37; --accent-deep:#7A1521;
+    --warn:#E01E37; --warn-soft:#B0182B; --gauge:#4A4F55;
+    --btn-text:#F7EFEC;
+    --radius:16px;
+    --font-ui:'Inter',sans-serif;
+    --font-label:'Inter',sans-serif;
+    --font-display:'Inter',sans-serif;
+    --font-num:'Inter',sans-serif;
+    --font-name:'Inter',sans-serif;
+    --font-meta:'Inter',sans-serif;
+  }
+  :root.light{
+    --bg:#F4F4F2; --panel:#FFFFFF; --panel-2:#ECECEA; --line:#E2E2DF;
+    --card-line:#E2E2DF; --card-shadow:none;
+    --well:#EBEBE8; --nav-bg:rgba(244,244,242,.96);
+    --text:#1B1D20; --dim:#5E6369; --faint:#9A9FA5; --label:#9A9FA5;
+    --accent:#B3362C; --accent-deep:#E3C2BE;
+    --warn:#B3362C; --warn-soft:#922B22; --gauge:#C6C6C2;
+    --btn-text:#FFFFFF;
+  }
+
+  /* ---- Warm Editorial. Day = cream/white pages on warm paper. Night =
+     dark burgundy ground, cream type, cream-outlined containers (~50%), kept
+     low-glare for night reading. Oxblood is the one filled accent. */
+  :root[data-skin="editorial"]{
+    --bg:#241317; --panel:#281519; --panel-2:#341E22; --line:rgba(242,231,212,.32);
+    --card-line:rgba(242,231,212,.5); --card-shadow:none;
+    --well:#1C1014; --nav-bg:rgba(36,19,23,.96);
+    --text:#F2E7D4; --dim:#C2A998; --faint:#8F7A6E; --label:#C9A865;
+    --accent:#A8362C; --accent-deep:#6B2018;
+    --warn:#A8362C; --warn-soft:#C2987E; --gauge:#A8843E;
+    --btn-text:#F2E7D4;
+    --radius:12px;
+    --font-ui:'Source Sans 3',sans-serif;
+    --font-label:'Source Sans 3',sans-serif;
+    --font-display:'Source Serif 4',Georgia,serif;
+    --font-num:'Source Serif 4',Georgia,serif;
+    --font-name:'Source Serif 4',Georgia,serif;
+    --font-meta:'Source Sans 3',sans-serif;
+  }
+  :root[data-skin="editorial"].light{
+    --bg:#FAF6EF; --panel:#FFFFFF; --panel-2:#F5EFE0; --line:#E5DCC8;
+    --card-line:transparent;
+    --card-shadow:none;
+    --well:#F5EFE0; --nav-bg:rgba(250,246,239,.97);
+    --text:#2A1F1A; --dim:#6B5D52; --faint:#9C8E81; --label:#A8843E;
+    --accent:#8B2D29; --accent-deep:#DCC3BC;
+    --warn:#8B2D29; --warn-soft:#B25652; --gauge:#A8843E;
+    --btn-text:#FFFFFF;
+  }
+
+  /* ---- Vintage Roadster: cream, near-black, tank red, brass, Oswald
+     gauge type. Card borders stay quiet; strong rules are structural only. */
+  :root[data-skin="roadster"]{
+    --bg:#171310; --panel:#221C15; --panel-2:#2B241B; --line:#564833;
+    --card-line:#564833; --card-shadow:none;
+    --well:#100D0A; --nav-bg:rgba(23,19,16,.96);
+    --text:#EFE7D6; --dim:#AB9F8B; --faint:#776C5B; --label:#AB9F8B;
+    --accent:#C04A3E; --accent-deep:#69302A;
+    --warn:#C04A3E; --warn-soft:#A03E33; --gauge:#C9A865;
+    --btn-text:#F8F1E2;
+    --radius:8px;
+    --font-ui:'Archivo',sans-serif;
+    --font-label:'Oswald',sans-serif;
+    --font-display:'Oswald',sans-serif;
+    --font-num:'Oswald',sans-serif;
+    --font-name:'Archivo',sans-serif;
+    --font-meta:'Oswald',sans-serif;
+  }
+  :root[data-skin="roadster"].light{
+    --bg:#F3EDDF; --panel:#FBF7EC; --panel-2:#ECE4D2; --line:#2E2519;
+    --card-line:#2E2519; --card-shadow:none;
+    --well:#EDE5D2; --nav-bg:rgba(243,237,223,.97);
+    --text:#1C1813; --dim:#5F574B; --faint:#94897A; --label:#5F574B;
+    --accent:#A52A22; --accent-deep:#E0B9B3;
+    --warn:#A52A22; --warn-soft:#7E6A37; --gauge:#A8843E;
+    --btn-text:#FBF7EC;
+  }
+
+  /* ---- Swiss: International typographic style. Monochrome, Inter, sharp
+     rectangles. Day = ink on paper; night = graphite. Red is kept only as the
+     warning signal (the canonical Swiss red). */
+  :root[data-skin="swiss"]{
+    --bg:#0E1418; --panel:#141A20; --panel-2:#1C242C; --line:rgba(216,221,226,.14);
+    --card-line:rgba(216,221,226,.42); --card-shadow:none;
+    --well:#0A0F12; --nav-bg:rgba(14,20,24,.96);
+    --text:#D8DDE2; --dim:#7A858F; --faint:#3D464F; --label:#7A858F;
+    --accent:#7A9AB3; --accent-deep:#3A4C5C;
+    --warn:#D8584E; --warn-soft:#A8463E; --gauge:#7A9AB3;
+    --btn-text:#0E1418;
+    --radius:0px;
+    --font-ui:'Inter',sans-serif;
+    --font-label:'Inter',sans-serif;
+    --font-display:'Inter',sans-serif;
+    --font-num:'Inter',sans-serif;
+    --font-name:'Inter',sans-serif;
+    --font-meta:'Inter',sans-serif;
+  }
+  :root[data-skin="swiss"].light{
+    --bg:#FFFFFF; --panel:#FFFFFF; --panel-2:#F0F0F0; --line:#000000;
+    --card-line:#000000; --card-shadow:none;
+    --well:#F0F0F0; --nav-bg:rgba(255,255,255,.97);
+    --text:#000000; --dim:#2A2A2A; --faint:#5C5C5C; --label:#000000;
+    --accent:#000000; --accent-deep:#C4C4C4;
+    --warn:#CE1B1B; --warn-soft:#9A1414; --gauge:#000000;
+    --btn-text:#FFFFFF;
+  }
+
+  /* ---- Instrument: scientific-panel look. Fraunces serif headings, JetBrains
+     Mono figures/labels, a blue accent (amber for warnings). */
+  :root[data-skin="instrument"]{
+    --bg:#0E1418; --panel:#141A20; --panel-2:#1C242C; --line:rgba(238,242,246,.08);
+    --card-line:rgba(238,242,246,.2); --card-shadow:none;
+    --well:#0A0F12; --nav-bg:rgba(14,20,24,.96);
+    --text:#EEF2F6; --dim:#6A7480; --faint:#2A333D; --label:#6A7480;
+    --accent:#5AA8E0; --accent-deep:#2A4A63;
+    --warn:#E0863A; --warn-soft:#A8632A; --gauge:#5AA8E0;
+    --btn-text:#0E1418;
+    --radius:3px;
+    --font-ui:'Inter',sans-serif;
+    --font-label:'JetBrains Mono',monospace;
+    --font-display:'Fraunces',serif;
+    --font-num:'JetBrains Mono',monospace;
+    --font-name:'Fraunces',serif;
+    --font-meta:'JetBrains Mono',monospace;
+  }
+  :root[data-skin="instrument"].light{
+    --bg:#FFFFFF; --panel:#FFFFFF; --panel-2:#E4E9ED; --line:#D8DEE4;
+    --card-line:#C8D0D8; --card-shadow:none;
+    --well:#E4E9ED; --nav-bg:rgba(255,255,255,.97);
+    --text:#0A0F14; --dim:#4A5560; --faint:#9BA5B0; --label:#4A5560;
+    --accent:#2165A8; --accent-deep:#AFC6DC;
+    --warn:#C2651A; --warn-soft:#9A4F12; --gauge:#2165A8;
+    --btn-text:#FFFFFF;
+  }
+
+  html{background:var(--bg);}
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:var(--font-ui); font-size:16px;
+    max-width:430px; margin:0 auto; min-height:100vh;
+    display:flex; flex-direction:column;
+  }
+  .eyebrow{
+    font-family:var(--font-label); font-weight:600;
+    text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; color:var(--label);
+  }
+  header{
+    padding:18px 20px 12px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--line);
+  }
+  header .right{display:flex; align-items:center; gap:10px;}
+  .theme-toggle{
+    background:none; border:none; color:var(--dim);
+    line-height:1; cursor:pointer; padding:6px 4px;
+    display:inline-flex; align-items:center;
+  }
+  .theme-toggle:hover{color:var(--text);}
+  .theme-toggle svg{width:18px; height:18px; display:block;}
+  .hdr-title .eyebrow{margin-bottom:2px;}
+  header .bike{font-family:var(--font-display); font-weight:600; font-size:1.12rem; letter-spacing:-.01em; line-height:1.05;}
+  header .bike span{color:var(--faint); font-weight:400; letter-spacing:0; font-size:.82em;}
+  main{flex:1; overflow-y:auto; padding:8px 16px 96px;}
+  .screen{display:none;}
+  .screen.active{display:block; animation:fade .18s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+  @media (prefers-reduced-motion: reduce){ .screen.active{animation:none;} }
+
+  /* ---------- LOG SCREEN ---------- */
+  .odo-card{
+    background:var(--panel); border:1px solid var(--card-line); border-radius:var(--radius);
+    box-shadow:var(--card-shadow);
+    padding:20px 18px 22px; margin-top:6px;
+  }
+  .odo-card .eyebrow{margin-bottom:12px;}
+  .odo-input{
+    display:flex; align-items:baseline; gap:8px;
+    padding-bottom:16px; border-bottom:1px solid var(--line);
+  }
+  .odo-input input{
+    flex:1; background:transparent; border:none;
+    color:var(--text); font-family:var(--font-num); font-weight:600;
+    font-size:3.4rem; line-height:1.1; letter-spacing:.01em; text-align:left;
+    font-variant-numeric:tabular-nums;
+    padding:0; width:100%; outline:none; caret-color:var(--accent);
+  }
+  .odo-input input:focus{box-shadow:inset 0 -2px 0 var(--accent);}
+  .odo-input .unit{font-family:var(--font-label); color:var(--dim); font-size:1rem; letter-spacing:.1em;}
+  .trip-line{
+    display:none; justify-content:space-between; align-items:baseline;
+    margin-top:14px;
+  }
+  .trip-line.show{display:flex;}
+  .trip-line .lbl{color:var(--dim); font-size:.9rem;}
+  .trip-line .val{font-family:var(--font-num); font-weight:600; font-size:1.3rem; color:var(--accent); font-variant-numeric:tabular-nums;}
+  .trip-line .val.neg{color:var(--warn);}
+  .save-btn{
+    width:100%; margin-top:16px; padding:15px;
+    background:var(--accent); border:none; border-radius:12px;
+    color:var(--btn-text); font-family:var(--font-ui); font-weight:600; font-size:1.05rem;
+    cursor:pointer;
+  }
+  .save-btn:disabled{background:var(--panel-2); color:var(--faint); cursor:default;}
+  .save-btn:focus-visible, .tab:focus-visible, button:focus-visible, input:focus-visible{
+    outline:2px solid var(--warn); outline-offset:2px;
+  }
+  .saved-flash{
+    margin-top:10px; text-align:center; font-size:.9rem; color:var(--accent);
+    opacity:0; transition:opacity .25s;
+  }
+  .saved-flash.show{opacity:1;}
+
+  .next-due{margin-top:22px;}
+  .next-due .eyebrow{margin-bottom:10px;}
+
+  /* ---------- SERVICE GAUGES ---------- */
+  .svc{
+    background:var(--panel); border:1px solid var(--card-line); border-radius:var(--radius);
+    box-shadow:var(--card-shadow);
+    padding:14px 16px; margin-bottom:10px;
+  }
+  .svc.tappable{cursor:pointer;}
+  .svc-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
+  .svc-name{font-family:var(--font-name); font-weight:600; font-size:.98rem;}
+  .svc-due{font-family:var(--font-meta); font-size:.82rem; color:var(--dim); font-variant-numeric:tabular-nums;}
+  .svc-due.warn{color:var(--warn); font-weight:600;}
+  .gauge{height:6px; background:var(--well); border-radius:4px; overflow:hidden;}
+  .gauge i{display:block; height:100%; background:var(--gauge); border-radius:4px;}
+  .gauge i.warn{background:var(--warn);}
+  .svc-sub{margin-top:7px; font-size:.8rem; color:var(--faint);
+    display:flex; justify-content:space-between;}
+  .svc-actions{margin-top:10px; display:none;}
+  .svc.open .svc-actions{display:block;}
+  .svc-actions button{
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line);
+    border-radius:9px; padding:9px 14px; font-family:var(--font-ui);
+    font-weight:500; font-size:.9rem; cursor:pointer;
+  }
+  .svc-actions button.primary{background:var(--warn); border-color:var(--warn); color:var(--btn-text); font-weight:600;}
+  .svc-actions .row{display:flex; gap:8px;}
+
+  /* ---------- HISTORY ---------- */
+  .month-block{margin-bottom:18px;}
+  .month-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:0 4px 8px;
+  }
+  .month-head .total{font-family:var(--font-num); font-size:.85rem; color:var(--accent); font-variant-numeric:tabular-nums;}
+  .ride{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--panel); border:1px solid var(--card-line);
+    box-shadow:var(--card-shadow);
+    padding:12px 16px; margin-bottom:6px; border-radius:11px;
+    cursor:pointer;
+  }
+  .ride .d{font-family:var(--font-name); font-size:.92rem; color:var(--text);}
+  .ride .d small{display:block; color:var(--faint); font-size:.76rem; font-family:var(--font-meta); margin-top:2px; font-variant-numeric:tabular-nums;}
+  .ride .trip{font-family:var(--font-num); font-weight:600; font-size:1.05rem; color:var(--accent); font-variant-numeric:tabular-nums;}
+  .ride .trip small{color:var(--faint); font-weight:500; font-size:.7rem; margin-left:2px;}
+  .ride.service-row .trip{color:var(--warn); font-family:var(--font-name); font-size:.9rem; font-weight:600;}
+  .ride.service-row .d small{color:var(--warn-soft);}
+  .history-empty{color:var(--faint); text-align:center; padding:40px 0; font-size:.92rem;}
+
+  /* ---------- TABS ---------- */
+  nav{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:430px;
+    background:var(--nav-bg); backdrop-filter:blur(8px);
+    border-top:1px solid var(--line);
+    display:flex; padding:6px 0 calc(8px + env(safe-area-inset-bottom));
+  }
+  .tab{
+    flex:1; background:none; border:none; color:var(--faint);
+    font-family:var(--font-label); font-weight:600; font-size:.82rem;
+    text-transform:uppercase; letter-spacing:.12em; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0;
+  }
+  .tab svg{width:22px; height:22px; fill:currentColor;}
+  .tab.active{color:var(--accent);}
+  .tab .dot{
+    position:relative; display:flex; align-items:center; justify-content:center;
+  }
+  .tab .dot::after{
+    content:''; position:absolute; top:-2px; right:-4px; width:7px; height:7px;
+    border-radius:50%; background:var(--warn); display:var(--badge,none);
+  }
+
+  /* ---------- SHEETS (settings + history edit) ----------
+     Additive UI for features the mockup didn't cover (sync, row edit).
+     Built from the same tokens; the three core screens are untouched. */
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.5);
+    opacity:0; visibility:hidden; transition:opacity .2s ease; z-index:30;
+  }
+  .overlay.show{opacity:1; visibility:visible;}
+  .sheet{
+    position:fixed; left:50%; bottom:0; transform:translate(-50%,100%);
+    width:100%; max-width:430px;
+    background:var(--panel); border-top:1px solid var(--line);
+    border-radius:18px 18px 0 0;
+    padding:18px 18px calc(20px + env(safe-area-inset-bottom));
+    transition:transform .22s ease; z-index:31;
+    max-height:88vh; overflow-y:auto;
+  }
+  .overlay.show .sheet{transform:translate(-50%,0);}
+  .sheet-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .sheet-head .title{font-family:var(--font-display); font-weight:600; font-size:1.15rem; letter-spacing:.04em;}
+  .sheet-close{background:none; border:none; color:var(--dim); font-size:1.4rem; line-height:1; cursor:pointer; padding:4px 6px;}
+  .sheet section{margin-bottom:20px;}
+  .sheet section .eyebrow{margin-bottom:10px; display:block;}
+  .field{margin-bottom:12px;}
+  .field label{display:block; color:var(--dim); font-size:.8rem; margin-bottom:5px;}
+  .field input{
+    width:100%; background:var(--well); border:1px solid var(--line); border-radius:10px;
+    color:var(--text); font-family:var(--font-ui); font-size:1rem; padding:11px 12px; outline:none;
+  }
+  .field input:focus{border-color:var(--accent);}
+  .field input.mono{font-family:var(--font-num); font-variant-numeric:tabular-nums;}
+  .btn{
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:11px 14px; font-family:var(--font-ui);
+    font-weight:500; font-size:.92rem; cursor:pointer;
+  }
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:var(--btn-text); font-weight:600;}
+  .btn.danger{background:none; border-color:var(--warn); color:var(--warn); font-weight:600;}
+  .btn.block{display:block; width:100%;}
+  .row{display:flex; gap:8px;}
+  .row .btn{flex:1;}
+  .hint{color:var(--faint); font-size:.8rem; margin-top:8px; line-height:1.45;}
+  .status{font-family:var(--font-num); font-size:.8rem; color:var(--dim); margin-top:10px; min-height:1em;}
+  .status.err{color:var(--warn);}
+  .status.ok{color:var(--accent);}
+
+  /* ---------- SETTINGS PAGE ---------- */
+  .set-group{margin-bottom:26px;}
+  .set-group > .eyebrow{display:block; margin-bottom:12px;}
+  .skin-picker{display:flex; flex-direction:column; gap:8px;}
+  .skin-picker button{
+    display:flex; align-items:center; gap:10px; width:100%;
+    background:var(--panel); color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:12px 14px; cursor:pointer;
+    font-family:var(--font-ui); font-weight:500; font-size:.92rem; text-align:left;
+  }
+  .skin-picker button[aria-pressed="true"]{border-color:var(--accent); color:var(--accent);}
+  .skin-picker .swatches{display:inline-flex; gap:3px; flex:none;}
+  .skin-picker .swatches i{width:13px; height:13px; border-radius:50%; border:1px solid var(--line);}
+  .skin-picker .check{margin-left:auto; visibility:hidden;}
+  .skin-picker button[aria-pressed="true"] .check{visibility:visible;}
+  .mode-picker{display:flex; gap:8px;}
+  .mode-picker button{
+    flex:1; background:var(--panel); color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:11px; cursor:pointer;
+    font-family:var(--font-ui); font-weight:500; font-size:.9rem;
+  }
+  .mode-picker button[aria-pressed="true"]{border-color:var(--accent); color:var(--accent); background:var(--panel-2);}
+
+  /* ---------- SIGN-IN GATE ---------- */
+  #gate{
+    position:fixed; inset:0; z-index:60; background:var(--bg);
+    display:none; align-items:center; justify-content:center; text-align:center;
+    padding:24px env(safe-area-inset-right) 24px env(safe-area-inset-left);
+  }
+  #gate.show{display:flex;}
+  .gate-card{display:flex; flex-direction:column; align-items:center; gap:14px;}
+  .gate-title{font-family:var(--font-display); font-size:2.2rem; line-height:1.1; letter-spacing:.08em; text-transform:uppercase; font-weight:600;}
+  .gate-owner{display:block; font-family:var(--font-label); font-size:1rem; font-weight:600; letter-spacing:.3em; color:var(--label); margin-bottom:4px; text-transform:uppercase;}
+  .gate-btn{
+    display:inline-flex; align-items:center; gap:9px; margin-top:6px;
+    background:var(--accent); color:var(--btn-text); text-decoration:none;
+    font-family:var(--font-ui); font-weight:600; font-size:.92rem;
+    padding:12px 22px; border-radius:999px;
+  }
+  .gate-btn:active{opacity:.85;}
+
+  /* ---------- PER-SKIN VOICE ----------
+     Small typographic moves the tokens can't express. */
+  :root[data-skin="editorial"] .trip-line .lbl,
+  :root[data-skin="editorial"] .svc-sub{font-family:var(--font-num); font-style:italic;}
+  :root[data-skin="editorial"] .month-head .total{font-style:italic;}
+  :root[data-skin="editorial"] .gate-title{text-transform:none; letter-spacing:0; font-weight:700;}
+  :root[data-skin="editorial"] .save-btn{border-radius:8px;}
+  :root[data-skin="editorial"] .eyebrow{font-weight:700;}
+  /* Editorial NIGHT: dark ground, cream type; a couple of labels go brass
+     for contrast against the burgundy. */
+  :root[data-skin="editorial"]:not(.light) .bike span{color:#C7A998;}
+  :root[data-skin="editorial"]:not(.light) .month-head .total{color:#D9A94A;}
+  :root[data-skin="editorial"]:not(.light) .tab.active{color:#D9A94A;}
+
+  #stripe{display:none; height:6px; flex:none;}
+  #stripe i{display:block; height:100%;}
+  #stripe .r{background:var(--accent); width:70%;}
+  #stripe .b{background:var(--gauge); width:12%;}
+  #stripe .k{background:var(--text); flex:1;}
+  :root[data-skin="roadster"] #stripe{display:flex;}
+
+  :root[data-skin="roadster"] .eyebrow{letter-spacing:.2em; font-weight:500;}
+  :root[data-skin="roadster"] .odo-input input{letter-spacing:.06em;}
+  :root[data-skin="roadster"] .bike{text-transform:uppercase; letter-spacing:.04em;}
+  :root[data-skin="roadster"] .odo-input{border-bottom-style:dashed;}
+  :root[data-skin="roadster"] nav{border-top-width:2px;}
+  :root[data-skin="roadster"] .save-btn,
+  :root[data-skin="roadster"] .btn.primary,
+  :root[data-skin="roadster"] .gate-btn{
+    font-family:var(--font-label); text-transform:uppercase; letter-spacing:.14em; font-weight:500;
+  }
+  :root[data-skin="roadster"] .gauge{border-radius:0; height:8px;}
+  :root[data-skin="roadster"] .gauge i{border-radius:0;}
+  :root[data-skin="roadster"] .save-btn{border-radius:6px;}
+  :root[data-skin="roadster"] .gate-btn{border-radius:6px;}
+  :root[data-skin="roadster"] .odo-card{box-shadow:3px 3px 0 rgba(28,20,12,.18);}
+  :root[data-skin="roadster"] .save-btn{box-shadow:2px 2px 0 rgba(28,20,12,.55);}
+  :root[data-skin="roadster"] .svc-sub{font-family:var(--font-meta); text-transform:uppercase; letter-spacing:.1em;}
+
+  /* Swiss: sharp rectangles (the radius token doesn't reach every element). */
+  :root[data-skin="swiss"] .save-btn,
+  :root[data-skin="swiss"] .ride,
+  :root[data-skin="swiss"] .gauge,
+  :root[data-skin="swiss"] .gauge i,
+  :root[data-skin="swiss"] .btn,
+  :root[data-skin="swiss"] .field input,
+  :root[data-skin="swiss"] .gate-btn{border-radius:0;}
+  /* Instrument: serif gate title rather than the gauge's lowercase thin one. */
+  :root[data-skin="instrument"] .eyebrow{letter-spacing:.16em;}
+  :root[data-skin="instrument"] .gate-title{text-transform:none; letter-spacing:-.005em; font-weight:500;}
+  :root[data-skin="instrument"] .svc-sub{text-transform:uppercase; letter-spacing:.12em;}
+
+  :root[data-skin="gauge"] .odo-input input{font-weight:300; letter-spacing:-.01em; font-size:3.8rem;}
+  :root[data-skin="gauge"] header{border-bottom-color:transparent;}
+  :root[data-skin="gauge"] .gate-title{text-transform:none; letter-spacing:-.01em; font-weight:300;}
+  :root[data-skin="gauge"] .gauge{height:4px;}
+  /* Dark Gauge: active tab keeps a neutral label, icon carries the accent. */
+  :root[data-skin="gauge"] .tab.active{color:var(--text);}
+  :root[data-skin="gauge"] .tab.active svg{fill:var(--accent);}

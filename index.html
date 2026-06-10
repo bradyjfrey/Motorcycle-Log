@@ -18,450 +18,9 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;600;700&family=Archivo:wght@400;500;600&family=Oswald:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  /* =====================================================================
-     THEME SYSTEM
-     Three skins (Dark Gauge / Warm Editorial / Vintage Roadster), each with
-     a night (default) and day (.light) variant. Skins set tokens only; the
-     component rules below consume them. html[data-skin] is set by JS from
-     localStorage before first paint of the app screens.
-     ===================================================================== */
-
-  /* ---- Dark Gauge (default): neutral graphite, one red accent, Inter. */
-  :root{
-    --bg:#16181B; --panel:#1E2125; --panel-2:#24272C; --line:#2A2D31;
-    --card-line:#2A2D31; --card-shadow:none;
-    --well:#101214; --nav-bg:rgba(22,24,27,.96);
-    --text:#ECEAE6; --dim:#9BA0A6; --faint:#6E747B; --label:#8A9098;
-    --accent:#E01E37; --accent-deep:#7A1521;
-    --warn:#E01E37; --warn-soft:#B0182B; --gauge:#4A4F55;
-    --btn-text:#F7EFEC;
-    --radius:16px;
-    --font-ui:'Inter',sans-serif;
-    --font-label:'Inter',sans-serif;
-    --font-display:'Inter',sans-serif;
-    --font-num:'Inter',sans-serif;
-    --font-name:'Inter',sans-serif;
-    --font-meta:'Inter',sans-serif;
-  }
-  :root.light{
-    --bg:#F4F4F2; --panel:#FFFFFF; --panel-2:#ECECEA; --line:#E2E2DF;
-    --card-line:#E2E2DF; --card-shadow:none;
-    --well:#EBEBE8; --nav-bg:rgba(244,244,242,.96);
-    --text:#1B1D20; --dim:#5E6369; --faint:#9A9FA5; --label:#9A9FA5;
-    --accent:#B3362C; --accent-deep:#E3C2BE;
-    --warn:#B3362C; --warn-soft:#922B22; --gauge:#C6C6C2;
-    --btn-text:#FFFFFF;
-  }
-
-  /* ---- Warm Editorial. Day = cream/white pages on warm paper. Night =
-     dark burgundy ground, cream type, cream-outlined containers (~50%), kept
-     low-glare for night reading. Oxblood is the one filled accent. */
-  :root[data-skin="editorial"]{
-    --bg:#241317; --panel:#281519; --panel-2:#341E22; --line:rgba(242,231,212,.32);
-    --card-line:rgba(242,231,212,.5); --card-shadow:none;
-    --well:#1C1014; --nav-bg:rgba(36,19,23,.96);
-    --text:#F2E7D4; --dim:#C2A998; --faint:#8F7A6E; --label:#C9A865;
-    --accent:#A8362C; --accent-deep:#6B2018;
-    --warn:#A8362C; --warn-soft:#C2987E; --gauge:#A8843E;
-    --btn-text:#F2E7D4;
-    --radius:12px;
-    --font-ui:'Source Sans 3',sans-serif;
-    --font-label:'Source Sans 3',sans-serif;
-    --font-display:'Source Serif 4',Georgia,serif;
-    --font-num:'Source Serif 4',Georgia,serif;
-    --font-name:'Source Serif 4',Georgia,serif;
-    --font-meta:'Source Sans 3',sans-serif;
-  }
-  :root[data-skin="editorial"].light{
-    --bg:#FAF6EF; --panel:#FFFFFF; --panel-2:#F5EFE0; --line:#E5DCC8;
-    --card-line:transparent;
-    --card-shadow:none;
-    --well:#F5EFE0; --nav-bg:rgba(250,246,239,.97);
-    --text:#2A1F1A; --dim:#6B5D52; --faint:#9C8E81; --label:#A8843E;
-    --accent:#8B2D29; --accent-deep:#DCC3BC;
-    --warn:#8B2D29; --warn-soft:#B25652; --gauge:#A8843E;
-    --btn-text:#FFFFFF;
-  }
-
-  /* ---- Vintage Roadster: cream, near-black, tank red, brass, Oswald
-     gauge type. Card borders stay quiet; strong rules are structural only. */
-  :root[data-skin="roadster"]{
-    --bg:#171310; --panel:#221C15; --panel-2:#2B241B; --line:#564833;
-    --card-line:#564833; --card-shadow:none;
-    --well:#100D0A; --nav-bg:rgba(23,19,16,.96);
-    --text:#EFE7D6; --dim:#AB9F8B; --faint:#776C5B; --label:#AB9F8B;
-    --accent:#C04A3E; --accent-deep:#69302A;
-    --warn:#C04A3E; --warn-soft:#A03E33; --gauge:#C9A865;
-    --btn-text:#F8F1E2;
-    --radius:8px;
-    --font-ui:'Archivo',sans-serif;
-    --font-label:'Oswald',sans-serif;
-    --font-display:'Oswald',sans-serif;
-    --font-num:'Oswald',sans-serif;
-    --font-name:'Archivo',sans-serif;
-    --font-meta:'Oswald',sans-serif;
-  }
-  :root[data-skin="roadster"].light{
-    --bg:#F3EDDF; --panel:#FBF7EC; --panel-2:#ECE4D2; --line:#2E2519;
-    --card-line:#2E2519; --card-shadow:none;
-    --well:#EDE5D2; --nav-bg:rgba(243,237,223,.97);
-    --text:#1C1813; --dim:#5F574B; --faint:#94897A; --label:#5F574B;
-    --accent:#A52A22; --accent-deep:#E0B9B3;
-    --warn:#A52A22; --warn-soft:#7E6A37; --gauge:#A8843E;
-    --btn-text:#FBF7EC;
-  }
-
-  /* ---- Swiss: International typographic style. Monochrome, Inter, sharp
-     rectangles. Day = ink on paper; night = graphite. Red is kept only as the
-     warning signal (the canonical Swiss red). */
-  :root[data-skin="swiss"]{
-    --bg:#0E1418; --panel:#141A20; --panel-2:#1C242C; --line:rgba(216,221,226,.14);
-    --card-line:rgba(216,221,226,.42); --card-shadow:none;
-    --well:#0A0F12; --nav-bg:rgba(14,20,24,.96);
-    --text:#D8DDE2; --dim:#7A858F; --faint:#3D464F; --label:#7A858F;
-    --accent:#7A9AB3; --accent-deep:#3A4C5C;
-    --warn:#D8584E; --warn-soft:#A8463E; --gauge:#7A9AB3;
-    --btn-text:#0E1418;
-    --radius:0px;
-    --font-ui:'Inter',sans-serif;
-    --font-label:'Inter',sans-serif;
-    --font-display:'Inter',sans-serif;
-    --font-num:'Inter',sans-serif;
-    --font-name:'Inter',sans-serif;
-    --font-meta:'Inter',sans-serif;
-  }
-  :root[data-skin="swiss"].light{
-    --bg:#FFFFFF; --panel:#FFFFFF; --panel-2:#F0F0F0; --line:#000000;
-    --card-line:#000000; --card-shadow:none;
-    --well:#F0F0F0; --nav-bg:rgba(255,255,255,.97);
-    --text:#000000; --dim:#2A2A2A; --faint:#5C5C5C; --label:#000000;
-    --accent:#000000; --accent-deep:#C4C4C4;
-    --warn:#CE1B1B; --warn-soft:#9A1414; --gauge:#000000;
-    --btn-text:#FFFFFF;
-  }
-
-  /* ---- Instrument: scientific-panel look. Fraunces serif headings, JetBrains
-     Mono figures/labels, a blue accent (amber for warnings). */
-  :root[data-skin="instrument"]{
-    --bg:#0E1418; --panel:#141A20; --panel-2:#1C242C; --line:rgba(238,242,246,.08);
-    --card-line:rgba(238,242,246,.2); --card-shadow:none;
-    --well:#0A0F12; --nav-bg:rgba(14,20,24,.96);
-    --text:#EEF2F6; --dim:#6A7480; --faint:#2A333D; --label:#6A7480;
-    --accent:#5AA8E0; --accent-deep:#2A4A63;
-    --warn:#E0863A; --warn-soft:#A8632A; --gauge:#5AA8E0;
-    --btn-text:#0E1418;
-    --radius:3px;
-    --font-ui:'Inter',sans-serif;
-    --font-label:'JetBrains Mono',monospace;
-    --font-display:'Fraunces',serif;
-    --font-num:'JetBrains Mono',monospace;
-    --font-name:'Fraunces',serif;
-    --font-meta:'JetBrains Mono',monospace;
-  }
-  :root[data-skin="instrument"].light{
-    --bg:#FFFFFF; --panel:#FFFFFF; --panel-2:#E4E9ED; --line:#D8DEE4;
-    --card-line:#C8D0D8; --card-shadow:none;
-    --well:#E4E9ED; --nav-bg:rgba(255,255,255,.97);
-    --text:#0A0F14; --dim:#4A5560; --faint:#9BA5B0; --label:#4A5560;
-    --accent:#2165A8; --accent-deep:#AFC6DC;
-    --warn:#C2651A; --warn-soft:#9A4F12; --gauge:#2165A8;
-    --btn-text:#FFFFFF;
-  }
-
-  html{background:var(--bg);}
-  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;}
-  body{
-    background:var(--bg); color:var(--text);
-    font-family:var(--font-ui); font-size:16px;
-    max-width:430px; margin:0 auto; min-height:100vh;
-    display:flex; flex-direction:column;
-  }
-  .eyebrow{
-    font-family:var(--font-label); font-weight:600;
-    text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; color:var(--label);
-  }
-  header{
-    padding:18px 20px 12px; display:flex; align-items:center; justify-content:space-between;
-    border-bottom:1px solid var(--line);
-  }
-  header .right{display:flex; align-items:center; gap:10px;}
-  .theme-toggle{
-    background:none; border:none; color:var(--dim);
-    line-height:1; cursor:pointer; padding:6px 4px;
-    display:inline-flex; align-items:center;
-  }
-  .theme-toggle:hover{color:var(--text);}
-  .theme-toggle svg{width:18px; height:18px; display:block;}
-  .hdr-title .eyebrow{margin-bottom:2px;}
-  header .bike{font-family:var(--font-display); font-weight:600; font-size:1.12rem; letter-spacing:-.01em; line-height:1.05;}
-  header .bike span{color:var(--faint); font-weight:400; letter-spacing:0; font-size:.82em;}
-  main{flex:1; overflow-y:auto; padding:8px 16px 96px;}
-  .screen{display:none;}
-  .screen.active{display:block; animation:fade .18s ease;}
-  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
-  @media (prefers-reduced-motion: reduce){ .screen.active{animation:none;} }
-
-  /* ---------- LOG SCREEN ---------- */
-  .odo-card{
-    background:var(--panel); border:1px solid var(--card-line); border-radius:var(--radius);
-    box-shadow:var(--card-shadow);
-    padding:20px 18px 22px; margin-top:6px;
-  }
-  .odo-card .eyebrow{margin-bottom:12px;}
-  .odo-input{
-    display:flex; align-items:baseline; gap:8px;
-    padding-bottom:16px; border-bottom:1px solid var(--line);
-  }
-  .odo-input input{
-    flex:1; background:transparent; border:none;
-    color:var(--text); font-family:var(--font-num); font-weight:600;
-    font-size:3.4rem; line-height:1.1; letter-spacing:.01em; text-align:left;
-    font-variant-numeric:tabular-nums;
-    padding:0; width:100%; outline:none; caret-color:var(--accent);
-  }
-  .odo-input input:focus{box-shadow:inset 0 -2px 0 var(--accent);}
-  .odo-input .unit{font-family:var(--font-label); color:var(--dim); font-size:1rem; letter-spacing:.1em;}
-  .trip-line{
-    display:none; justify-content:space-between; align-items:baseline;
-    margin-top:14px;
-  }
-  .trip-line.show{display:flex;}
-  .trip-line .lbl{color:var(--dim); font-size:.9rem;}
-  .trip-line .val{font-family:var(--font-num); font-weight:600; font-size:1.3rem; color:var(--accent); font-variant-numeric:tabular-nums;}
-  .trip-line .val.neg{color:var(--warn);}
-  .save-btn{
-    width:100%; margin-top:16px; padding:15px;
-    background:var(--accent); border:none; border-radius:12px;
-    color:var(--btn-text); font-family:var(--font-ui); font-weight:600; font-size:1.05rem;
-    cursor:pointer;
-  }
-  .save-btn:disabled{background:var(--panel-2); color:var(--faint); cursor:default;}
-  .save-btn:focus-visible, .tab:focus-visible, button:focus-visible, input:focus-visible{
-    outline:2px solid var(--warn); outline-offset:2px;
-  }
-  .saved-flash{
-    margin-top:10px; text-align:center; font-size:.9rem; color:var(--accent);
-    opacity:0; transition:opacity .25s;
-  }
-  .saved-flash.show{opacity:1;}
-
-  .next-due{margin-top:22px;}
-  .next-due .eyebrow{margin-bottom:10px;}
-
-  /* ---------- SERVICE GAUGES ---------- */
-  .svc{
-    background:var(--panel); border:1px solid var(--card-line); border-radius:var(--radius);
-    box-shadow:var(--card-shadow);
-    padding:14px 16px; margin-bottom:10px;
-  }
-  .svc.tappable{cursor:pointer;}
-  .svc-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
-  .svc-name{font-family:var(--font-name); font-weight:600; font-size:.98rem;}
-  .svc-due{font-family:var(--font-meta); font-size:.82rem; color:var(--dim); font-variant-numeric:tabular-nums;}
-  .svc-due.warn{color:var(--warn); font-weight:600;}
-  .gauge{height:6px; background:var(--well); border-radius:4px; overflow:hidden;}
-  .gauge i{display:block; height:100%; background:var(--gauge); border-radius:4px;}
-  .gauge i.warn{background:var(--warn);}
-  .svc-sub{margin-top:7px; font-size:.8rem; color:var(--faint);
-    display:flex; justify-content:space-between;}
-  .svc-actions{margin-top:10px; display:none;}
-  .svc.open .svc-actions{display:block;}
-  .svc-actions button{
-    background:var(--panel-2); color:var(--text); border:1px solid var(--line);
-    border-radius:9px; padding:9px 14px; font-family:var(--font-ui);
-    font-weight:500; font-size:.9rem; cursor:pointer;
-  }
-  .svc-actions button.primary{background:var(--warn); border-color:var(--warn); color:var(--btn-text); font-weight:600;}
-  .svc-actions .row{display:flex; gap:8px;}
-
-  /* ---------- HISTORY ---------- */
-  .month-block{margin-bottom:18px;}
-  .month-head{
-    display:flex; justify-content:space-between; align-items:baseline;
-    padding:0 4px 8px;
-  }
-  .month-head .total{font-family:var(--font-num); font-size:.85rem; color:var(--accent); font-variant-numeric:tabular-nums;}
-  .ride{
-    display:flex; justify-content:space-between; align-items:center;
-    background:var(--panel); border:1px solid var(--card-line);
-    box-shadow:var(--card-shadow);
-    padding:12px 16px; margin-bottom:6px; border-radius:11px;
-    cursor:pointer;
-  }
-  .ride .d{font-family:var(--font-name); font-size:.92rem; color:var(--text);}
-  .ride .d small{display:block; color:var(--faint); font-size:.76rem; font-family:var(--font-meta); margin-top:2px; font-variant-numeric:tabular-nums;}
-  .ride .trip{font-family:var(--font-num); font-weight:600; font-size:1.05rem; color:var(--accent); font-variant-numeric:tabular-nums;}
-  .ride .trip small{color:var(--faint); font-weight:500; font-size:.7rem; margin-left:2px;}
-  .ride.service-row .trip{color:var(--warn); font-family:var(--font-name); font-size:.9rem; font-weight:600;}
-  .ride.service-row .d small{color:var(--warn-soft);}
-  .history-empty{color:var(--faint); text-align:center; padding:40px 0; font-size:.92rem;}
-
-  /* ---------- TABS ---------- */
-  nav{
-    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
-    width:100%; max-width:430px;
-    background:var(--nav-bg); backdrop-filter:blur(8px);
-    border-top:1px solid var(--line);
-    display:flex; padding:6px 0 calc(8px + env(safe-area-inset-bottom));
-  }
-  .tab{
-    flex:1; background:none; border:none; color:var(--faint);
-    font-family:var(--font-label); font-weight:600; font-size:.82rem;
-    text-transform:uppercase; letter-spacing:.12em; cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0;
-  }
-  .tab svg{width:22px; height:22px; fill:currentColor;}
-  .tab.active{color:var(--accent);}
-  .tab .dot{
-    position:relative; display:flex; align-items:center; justify-content:center;
-  }
-  .tab .dot::after{
-    content:''; position:absolute; top:-2px; right:-4px; width:7px; height:7px;
-    border-radius:50%; background:var(--warn); display:var(--badge,none);
-  }
-
-  /* ---------- SHEETS (settings + history edit) ----------
-     Additive UI for features the mockup didn't cover (sync, row edit).
-     Built from the same tokens; the three core screens are untouched. */
-  .overlay{
-    position:fixed; inset:0; background:rgba(0,0,0,.5);
-    opacity:0; visibility:hidden; transition:opacity .2s ease; z-index:30;
-  }
-  .overlay.show{opacity:1; visibility:visible;}
-  .sheet{
-    position:fixed; left:50%; bottom:0; transform:translate(-50%,100%);
-    width:100%; max-width:430px;
-    background:var(--panel); border-top:1px solid var(--line);
-    border-radius:18px 18px 0 0;
-    padding:18px 18px calc(20px + env(safe-area-inset-bottom));
-    transition:transform .22s ease; z-index:31;
-    max-height:88vh; overflow-y:auto;
-  }
-  .overlay.show .sheet{transform:translate(-50%,0);}
-  .sheet-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
-  .sheet-head .title{font-family:var(--font-display); font-weight:600; font-size:1.15rem; letter-spacing:.04em;}
-  .sheet-close{background:none; border:none; color:var(--dim); font-size:1.4rem; line-height:1; cursor:pointer; padding:4px 6px;}
-  .sheet section{margin-bottom:20px;}
-  .sheet section .eyebrow{margin-bottom:10px; display:block;}
-  .field{margin-bottom:12px;}
-  .field label{display:block; color:var(--dim); font-size:.8rem; margin-bottom:5px;}
-  .field input{
-    width:100%; background:var(--well); border:1px solid var(--line); border-radius:10px;
-    color:var(--text); font-family:var(--font-ui); font-size:1rem; padding:11px 12px; outline:none;
-  }
-  .field input:focus{border-color:var(--accent);}
-  .field input.mono{font-family:var(--font-num); font-variant-numeric:tabular-nums;}
-  .btn{
-    background:var(--panel-2); color:var(--text); border:1px solid var(--line);
-    border-radius:10px; padding:11px 14px; font-family:var(--font-ui);
-    font-weight:500; font-size:.92rem; cursor:pointer;
-  }
-  .btn.primary{background:var(--accent); border-color:var(--accent); color:var(--btn-text); font-weight:600;}
-  .btn.danger{background:none; border-color:var(--warn); color:var(--warn); font-weight:600;}
-  .btn.block{display:block; width:100%;}
-  .row{display:flex; gap:8px;}
-  .row .btn{flex:1;}
-  .hint{color:var(--faint); font-size:.8rem; margin-top:8px; line-height:1.45;}
-  .status{font-family:var(--font-num); font-size:.8rem; color:var(--dim); margin-top:10px; min-height:1em;}
-  .status.err{color:var(--warn);}
-  .status.ok{color:var(--accent);}
-
-  /* ---------- SETTINGS PAGE ---------- */
-  .set-group{margin-bottom:26px;}
-  .set-group > .eyebrow{display:block; margin-bottom:12px;}
-  .skin-picker{display:flex; flex-direction:column; gap:8px;}
-  .skin-picker button{
-    display:flex; align-items:center; gap:10px; width:100%;
-    background:var(--panel); color:var(--text); border:1px solid var(--line);
-    border-radius:10px; padding:12px 14px; cursor:pointer;
-    font-family:var(--font-ui); font-weight:500; font-size:.92rem; text-align:left;
-  }
-  .skin-picker button[aria-pressed="true"]{border-color:var(--accent); color:var(--accent);}
-  .skin-picker .swatches{display:inline-flex; gap:3px; flex:none;}
-  .skin-picker .swatches i{width:13px; height:13px; border-radius:50%; border:1px solid var(--line);}
-  .skin-picker .check{margin-left:auto; visibility:hidden;}
-  .skin-picker button[aria-pressed="true"] .check{visibility:visible;}
-
-  /* ---------- SIGN-IN GATE ---------- */
-  #gate{
-    position:fixed; inset:0; z-index:60; background:var(--bg);
-    display:none; align-items:center; justify-content:center; text-align:center;
-    padding:24px env(safe-area-inset-right) 24px env(safe-area-inset-left);
-  }
-  #gate.show{display:flex;}
-  .gate-card{display:flex; flex-direction:column; align-items:center; gap:14px;}
-  .gate-title{font-family:var(--font-display); font-size:2.2rem; line-height:1.1; letter-spacing:.08em; text-transform:uppercase; font-weight:600;}
-  .gate-owner{display:block; font-family:var(--font-label); font-size:1rem; font-weight:600; letter-spacing:.3em; color:var(--label); margin-bottom:4px; text-transform:uppercase;}
-  .gate-btn{
-    display:inline-flex; align-items:center; gap:9px; margin-top:6px;
-    background:var(--accent); color:var(--btn-text); text-decoration:none;
-    font-family:var(--font-ui); font-weight:600; font-size:.92rem;
-    padding:12px 22px; border-radius:999px;
-  }
-  .gate-btn:active{opacity:.85;}
-
-  /* ---------- PER-SKIN VOICE ----------
-     Small typographic moves the tokens can't express. */
-  :root[data-skin="editorial"] .trip-line .lbl,
-  :root[data-skin="editorial"] .svc-sub{font-family:var(--font-num); font-style:italic;}
-  :root[data-skin="editorial"] .month-head .total{font-style:italic;}
-  :root[data-skin="editorial"] .gate-title{text-transform:none; letter-spacing:0; font-weight:700;}
-  :root[data-skin="editorial"] .save-btn{border-radius:8px;}
-  :root[data-skin="editorial"] .eyebrow{font-weight:700;}
-  /* Editorial NIGHT: dark ground, cream type; a couple of labels go brass
-     for contrast against the burgundy. */
-  :root[data-skin="editorial"]:not(.light) .bike span{color:#C7A998;}
-  :root[data-skin="editorial"]:not(.light) .month-head .total{color:#D9A94A;}
-  :root[data-skin="editorial"]:not(.light) .tab.active{color:#D9A94A;}
-
-  #stripe{display:none; height:6px; flex:none;}
-  #stripe i{display:block; height:100%;}
-  #stripe .r{background:var(--accent); width:70%;}
-  #stripe .b{background:var(--gauge); width:12%;}
-  #stripe .k{background:var(--text); flex:1;}
-  :root[data-skin="roadster"] #stripe{display:flex;}
-
-  :root[data-skin="roadster"] .eyebrow{letter-spacing:.2em; font-weight:500;}
-  :root[data-skin="roadster"] .odo-input input{letter-spacing:.06em;}
-  :root[data-skin="roadster"] .bike{text-transform:uppercase; letter-spacing:.04em;}
-  :root[data-skin="roadster"] .odo-input{border-bottom-style:dashed;}
-  :root[data-skin="roadster"] nav{border-top-width:2px;}
-  :root[data-skin="roadster"] .save-btn,
-  :root[data-skin="roadster"] .btn.primary,
-  :root[data-skin="roadster"] .gate-btn{
-    font-family:var(--font-label); text-transform:uppercase; letter-spacing:.14em; font-weight:500;
-  }
-  :root[data-skin="roadster"] .gauge{border-radius:0; height:8px;}
-  :root[data-skin="roadster"] .gauge i{border-radius:0;}
-  :root[data-skin="roadster"] .save-btn{border-radius:6px;}
-  :root[data-skin="roadster"] .gate-btn{border-radius:6px;}
-  :root[data-skin="roadster"] .odo-card{box-shadow:3px 3px 0 rgba(28,20,12,.18);}
-  :root[data-skin="roadster"] .save-btn{box-shadow:2px 2px 0 rgba(28,20,12,.55);}
-  :root[data-skin="roadster"] .svc-sub{font-family:var(--font-meta); text-transform:uppercase; letter-spacing:.1em;}
-
-  /* Swiss: sharp rectangles (the radius token doesn't reach every element). */
-  :root[data-skin="swiss"] .save-btn,
-  :root[data-skin="swiss"] .ride,
-  :root[data-skin="swiss"] .gauge,
-  :root[data-skin="swiss"] .gauge i,
-  :root[data-skin="swiss"] .btn,
-  :root[data-skin="swiss"] .field input,
-  :root[data-skin="swiss"] .gate-btn{border-radius:0;}
-  /* Instrument: serif gate title rather than the gauge's lowercase thin one. */
-  :root[data-skin="instrument"] .eyebrow{letter-spacing:.16em;}
-  :root[data-skin="instrument"] .gate-title{text-transform:none; letter-spacing:-.005em; font-weight:500;}
-  :root[data-skin="instrument"] .svc-sub{text-transform:uppercase; letter-spacing:.12em;}
-
-  :root[data-skin="gauge"] .odo-input input{font-weight:300; letter-spacing:-.01em; font-size:3.8rem;}
-  :root[data-skin="gauge"] header{border-bottom-color:transparent;}
-  :root[data-skin="gauge"] .gate-title{text-transform:none; letter-spacing:-.01em; font-weight:300;}
-  :root[data-skin="gauge"] .gauge{height:4px;}
-  /* Dark Gauge: active tab keeps a neutral label, icon carries the accent. */
-  :root[data-skin="gauge"] .tab.active{color:var(--text);}
-  :root[data-skin="gauge"] .tab.active svg{fill:var(--accent);}
-</style>
+<link rel="stylesheet" href="/style.css">
+<!-- Set theme + day/night before first paint to avoid a flash -->
+<script>(function(){try{var d=document.documentElement,s=localStorage.getItem('odo-skin');if(['gauge','editorial','roadster','swiss','instrument'].indexOf(s)<0)s='gauge';d.dataset.skin=s;var m=localStorage.getItem('odo-theme');var light=m?m==='light':matchMedia('(prefers-color-scheme: light)').matches;d.classList.toggle('light',light);}catch(e){}})();</script>
 </head>
 <body>
 
@@ -505,6 +64,7 @@
   <section class="screen" id="screen-service">
     <div class="eyebrow" style="margin:6px 4px 12px;">Maintenance schedule</div>
     <div id="svc-list"></div>
+    <button class="btn block" id="add-service" style="margin-top:14px;">Log a service</button>
   </section>
 
   <!-- HISTORY -->
@@ -523,6 +83,15 @@
       <span class="eyebrow">Sync</span>
       <div class="status" id="sync-status"></div>
       <div class="row" style="margin-top:8px;"><button class="btn" id="sync-now">Sync Now</button></div>
+    </section>
+    <section class="set-group">
+      <span class="eyebrow">Appearance</span>
+      <div class="mode-picker" id="mode-picker">
+        <button data-mode="auto" aria-pressed="true">Auto</button>
+        <button data-mode="light" aria-pressed="false">Light</button>
+        <button data-mode="dark" aria-pressed="false">Dark</button>
+      </div>
+      <div class="hint">Lock in Light or Dark mode, or let it follow your system settings.</div>
     </section>
     <section class="set-group">
       <span class="eyebrow">Theme</span>
@@ -578,6 +147,10 @@
       <span class="title" id="edit-title">Edit ride</span>
       <button class="sheet-close" data-close-edit aria-label="Close">✕</button>
     </div>
+    <div class="field" id="edit-item-field">
+      <label for="edit-item">What &amp; where</label>
+      <input id="edit-item" type="text" placeholder="e.g. Oil change · Fremont Honda">
+    </div>
     <div class="field">
       <label for="edit-date">Date</label>
       <input id="edit-date" type="date">
@@ -623,16 +196,95 @@ const TODAY = new Date();
    Seed records use *deterministic* ids and timestamps so that if two fresh
    devices seed independently and later sync, the merge dedupes them by id
    instead of doubling the history. User-created records get random ids. */
-const SEED_TS = Date.parse('2026-06-09T00:00:00Z');
+const SEED_VERSION = 2;
+const SEED_TS = Date.parse('2026-06-10T18:00:00Z');
 function seedState(){
   return {
     version: 1,
+    seedVersion: SEED_VERSION,
     rides: [
-      {id:'seed-r-2026-06-07', date:'2026-06-07', odo:825, trip:31, updatedAt:SEED_TS},
-      {id:'seed-r-2026-06-01', date:'2026-06-01', odo:794, trip:52, updatedAt:SEED_TS},
-      {id:'seed-r-2026-05-25', date:'2026-05-25', odo:742, trip:38, updatedAt:SEED_TS},
-      {id:'seed-r-2026-05-17', date:'2026-05-17', odo:704, trip:64, updatedAt:SEED_TS},
-      {id:'seed-r-2026-05-09', date:'2026-05-09', odo:640, trip:40, updatedAt:SEED_TS},
+      {id:'seed-r-825', date:'2026-06-10', odo:825, trip:15, updatedAt:SEED_TS},
+      {id:'seed-r-810', date:'2026-06-09', odo:810, trip:10, updatedAt:SEED_TS},
+      {id:'seed-r-800', date:'2026-06-02', odo:800, trip:26, updatedAt:SEED_TS},
+      {id:'seed-r-774', date:'2026-04-24', odo:774, trip:29, updatedAt:SEED_TS},
+      {id:'seed-r-745', date:'2026-04-03', odo:745, trip:15, updatedAt:SEED_TS},
+      {id:'seed-r-730', date:'2026-04-03', odo:730, trip:5, updatedAt:SEED_TS},
+      {id:'seed-r-725', date:'2026-04-03', odo:725, trip:14, updatedAt:SEED_TS},
+      {id:'seed-r-711', date:'2026-04-02', odo:711, trip:23, updatedAt:SEED_TS},
+      {id:'seed-r-688', date:'2026-04-02', odo:688, trip:3, updatedAt:SEED_TS},
+      {id:'seed-r-685', date:'2026-04-02', odo:685, trip:21, updatedAt:SEED_TS},
+      {id:'seed-r-664', date:'2026-03-30', odo:664, trip:5, updatedAt:SEED_TS},
+      {id:'seed-r-659', date:'2026-03-25', odo:659, trip:10, updatedAt:SEED_TS},
+      {id:'seed-r-649', date:'2026-03-25', odo:649, trip:4, updatedAt:SEED_TS},
+      {id:'seed-r-645', date:'2026-03-20', odo:645, trip:9, updatedAt:SEED_TS},
+      {id:'seed-r-636', date:'2026-03-20', odo:636, trip:17, updatedAt:SEED_TS},
+      {id:'seed-r-619', date:'2026-03-20', odo:619, trip:25, updatedAt:SEED_TS},
+      {id:'seed-r-594', date:'2026-03-16', odo:594, trip:19, updatedAt:SEED_TS},
+      {id:'seed-r-575', date:'2026-03-16', odo:575, trip:19, updatedAt:SEED_TS},
+      {id:'seed-r-556', date:'2026-03-12', odo:556, trip:11, updatedAt:SEED_TS},
+      {id:'seed-r-545', date:'2026-02-27', odo:545, trip:5, updatedAt:SEED_TS},
+      {id:'seed-r-540', date:'2026-02-27', odo:540, trip:5, updatedAt:SEED_TS},
+      {id:'seed-r-535', date:'2026-02-01', odo:535, trip:4, updatedAt:SEED_TS},
+      {id:'seed-r-531', date:'2026-02-01', odo:531, trip:4, updatedAt:SEED_TS},
+      {id:'seed-r-527', date:'2026-01-14', odo:527, trip:7, updatedAt:SEED_TS},
+      {id:'seed-r-520', date:'2026-01-14', odo:520, trip:6, updatedAt:SEED_TS},
+      {id:'seed-r-514', date:'2026-01-14', odo:514, trip:8, updatedAt:SEED_TS},
+      {id:'seed-r-506', date:'2026-01-10', odo:506, trip:7, updatedAt:SEED_TS},
+      {id:'seed-r-499', date:'2026-01-10', odo:499, trip:2, updatedAt:SEED_TS},
+      {id:'seed-r-497', date:'2026-01-10', odo:497, trip:10, updatedAt:SEED_TS},
+      {id:'seed-r-487', date:'2026-01-10', odo:487, trip:3, updatedAt:SEED_TS},
+      {id:'seed-r-484', date:'2025-12-14', odo:484, trip:16, updatedAt:SEED_TS},
+      {id:'seed-r-468', date:'2025-11-25', odo:468, trip:22, updatedAt:SEED_TS},
+      {id:'seed-r-446', date:'2025-11-25', odo:446, trip:3, updatedAt:SEED_TS},
+      {id:'seed-r-443', date:'2025-11-25', odo:443, trip:18, updatedAt:SEED_TS},
+      {id:'seed-r-425', date:'2025-11-24', odo:425, trip:12, updatedAt:SEED_TS},
+      {id:'seed-r-413', date:'2025-10-31', odo:413, trip:2, updatedAt:SEED_TS},
+      {id:'seed-r-411', date:'2025-10-31', odo:411, trip:5, updatedAt:SEED_TS},
+      {id:'seed-r-406', date:'2025-10-24', odo:406, trip:2, updatedAt:SEED_TS},
+      {id:'seed-r-404', date:'2025-10-24', odo:404, trip:7, updatedAt:SEED_TS},
+      {id:'seed-r-397', date:'2025-10-24', odo:397, trip:5, updatedAt:SEED_TS},
+      {id:'seed-r-392', date:'2025-10-23', odo:392, trip:3, updatedAt:SEED_TS},
+      {id:'seed-r-389', date:'2025-10-23', odo:389, trip:3, updatedAt:SEED_TS},
+      {id:'seed-r-386', date:'2025-10-19', odo:386, trip:6, updatedAt:SEED_TS},
+      {id:'seed-r-380', date:'2025-10-12', odo:380, trip:11, updatedAt:SEED_TS},
+      {id:'seed-r-369', date:'2025-10-12', odo:369, trip:5, updatedAt:SEED_TS},
+      {id:'seed-r-364', date:'2025-10-12', odo:364, trip:7, updatedAt:SEED_TS},
+      {id:'seed-r-357', date:'2025-09-25', odo:357, trip:6, updatedAt:SEED_TS},
+      {id:'seed-r-351', date:'2025-09-25', odo:351, trip:3, updatedAt:SEED_TS},
+      {id:'seed-r-348', date:'2025-09-25', odo:348, trip:5, updatedAt:SEED_TS},
+      {id:'seed-r-343', date:'2025-09-13', odo:343, trip:5, updatedAt:SEED_TS},
+      {id:'seed-r-338', date:'2025-09-13', odo:338, trip:5, updatedAt:SEED_TS},
+      {id:'seed-r-333', date:'2025-09-12', odo:333, trip:7, updatedAt:SEED_TS},
+      {id:'seed-r-326', date:'2025-09-12', odo:326, trip:14, updatedAt:SEED_TS},
+      {id:'seed-r-312', date:'2025-09-12', odo:312, trip:6, updatedAt:SEED_TS},
+      {id:'seed-r-306', date:'2025-08-28', odo:306, trip:2, updatedAt:SEED_TS},
+      {id:'seed-r-304', date:'2025-08-28', odo:304, trip:13, updatedAt:SEED_TS},
+      {id:'seed-r-291', date:'2025-08-28', odo:291, trip:10, updatedAt:SEED_TS},
+      {id:'seed-r-281', date:'2025-08-28', odo:281, trip:9, updatedAt:SEED_TS},
+      {id:'seed-r-272', date:'2025-08-25', odo:272, trip:38, updatedAt:SEED_TS},
+      {id:'seed-r-234', date:'2025-08-25', odo:234, trip:13, updatedAt:SEED_TS},
+      {id:'seed-r-221', date:'2025-08-25', odo:221, trip:18, updatedAt:SEED_TS},
+      {id:'seed-r-203', date:'2025-08-25', odo:203, trip:28, updatedAt:SEED_TS},
+      {id:'seed-r-175', date:'2025-08-25', odo:175, trip:20, updatedAt:SEED_TS},
+      {id:'seed-r-155', date:'2025-08-22', odo:155, trip:17, updatedAt:SEED_TS},
+      {id:'seed-r-138', date:'2025-08-22', odo:138, trip:5, updatedAt:SEED_TS},
+      {id:'seed-r-133', date:'2025-08-22', odo:133, trip:12, updatedAt:SEED_TS},
+      {id:'seed-r-121', date:'2025-08-22', odo:121, trip:4, updatedAt:SEED_TS},
+      {id:'seed-r-117', date:'2025-08-19', odo:117, trip:16, updatedAt:SEED_TS},
+      {id:'seed-r-101', date:'2025-08-17', odo:101, trip:20, updatedAt:SEED_TS},
+      {id:'seed-r-81', date:'2025-08-15', odo:81, trip:3, updatedAt:SEED_TS},
+      {id:'seed-r-78', date:'2025-07-27', odo:78, trip:7, updatedAt:SEED_TS},
+      {id:'seed-r-71', date:'2025-07-27', odo:71, trip:7, updatedAt:SEED_TS},
+      {id:'seed-r-64', date:'2025-07-24', odo:64, trip:45, updatedAt:SEED_TS},
+      {id:'seed-r-19', date:'2025-07-22', odo:19, trip:10, updatedAt:SEED_TS},
+      {id:'seed-r-9', date:'2025-07-16', odo:9, trip:8, updatedAt:SEED_TS},
+      {id:'seed-r-1', date:'2025-07-15', odo:1, trip:1, updatedAt:SEED_TS},
+      /* retire the original demo rides from any already-synced copy */
+      {id:'seed-r-2026-06-07', deleted:true, updatedAt:SEED_TS},
+      {id:'seed-r-2026-06-01', deleted:true, updatedAt:SEED_TS},
+      {id:'seed-r-2026-05-25', deleted:true, updatedAt:SEED_TS},
+      {id:'seed-r-2026-05-17', deleted:true, updatedAt:SEED_TS},
+      {id:'seed-r-2026-05-09', deleted:true, updatedAt:SEED_TS},
     ],
     services: [
       {id:'seed-s-2026-04-02', date:'2026-04-02', odo:685, item:'600-mi service · Fremont Honda', updatedAt:SEED_TS},
@@ -923,24 +575,50 @@ function openEdit(kind, id){
   if (!rec) return;
   editing = {kind, id};
   $('#edit-title').textContent = kind === 'ride' ? 'Edit ride' : 'Edit service';
+  $('#edit-item-field').style.display = kind === 'service' ? '' : 'none';
+  if (kind === 'service') $('#edit-item').value = rec.item || '';
   $('#edit-date').value = rec.date;
   $('#edit-odo').value = rec.odo;
+  $('#edit-delete').style.display = '';
   $('#edit-status').textContent = '';
   showOverlay('#edit-overlay');
 }
+/* Log a service that isn't on the maintenance schedule. */
+function openAddService(){
+  editing = {kind:'service', id:null};
+  $('#edit-title').textContent = 'Log service';
+  $('#edit-item-field').style.display = '';
+  $('#edit-item').value = '';
+  $('#edit-date').value = todayISO();
+  $('#edit-odo').value = currentOdo();
+  $('#edit-delete').style.display = 'none';
+  $('#edit-status').textContent = '';
+  showOverlay('#edit-overlay');
+}
+$('#add-service').addEventListener('click', openAddService);
 $('#edit-save').addEventListener('click', () => {
-  const rec = recordFor(editing.kind, editing.id);
-  if (!rec) return;
   const odo = parseInt($('#edit-odo').value, 10);
   const date = $('#edit-date').value;
   if (!date || isNaN(odo) || odo < 0){
     $('#edit-status').textContent = 'Enter a valid date and odometer.';
     return;
   }
-  rec.date = date;
-  rec.odo = odo;
-  rec.updatedAt = Date.now();
-  if (editing.kind === 'ride') recomputeTrips();
+  if (editing.kind === 'service'){
+    const item = $('#edit-item').value.trim();
+    if (!item){ $('#edit-status').textContent = 'Enter what was done.'; return; }
+    if (editing.id == null){
+      state.services.unshift({id: uid(), date, odo, item, updatedAt: Date.now()});
+    } else {
+      const rec = recordFor('service', editing.id);
+      if (!rec) return;
+      rec.date = date; rec.odo = odo; rec.item = item; rec.updatedAt = Date.now();
+    }
+  } else {
+    const rec = recordFor(editing.kind, editing.id);
+    if (!rec) return;
+    rec.date = date; rec.odo = odo; rec.updatedAt = Date.now();
+    recomputeTrips();
+  }
   saveState();
   render();
   hideOverlay('#edit-overlay');
@@ -1071,12 +749,11 @@ async function syncNow(){
     const remoteText = await res.text();
     let remote = null;
     try{ const r = JSON.parse(remoteText); if (r && Array.isArray(r.rides)) remote = r; }catch{}
-    // The account's very first sync: cloud empty, device empty. Start from
-    // the seed so the maintenance schedule isn't blank.
-    if (!remote && !state.rides.length && !state.services.length && !state.schedule.length)
-      state = seedState();
-    // 2. Merge into local
+    // 2. Merge remote into local
     if (remote) state = mergeStates(state, remote);
+    // Seed a fresh account, or upgrade an older seed (adds the real history
+    // and retires the original demo rides via tombstones).
+    if ((state.seedVersion || 0) < SEED_VERSION) state = mergeStates(state, seedState());
     persist();
     render();
     // 3. Push if we changed anything (or remote was empty)
@@ -1168,7 +845,17 @@ function applyTheme(){
   document.documentElement.classList.toggle('light', light);
   $('#theme-toggle').innerHTML = light ? '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8 8 0 0 1-9.45-9.45A1 1 0 0 0 9.36 2 10 10 0 1 0 22 14.64a1 1 0 0 0-.36-1.64z"/></svg>' : '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V2a1 1 0 0 1 1-1zm0 18a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1zM4.22 4.22a1 1 0 0 1 1.42 0l1.41 1.41a1 1 0 1 1-1.41 1.42L4.22 5.64a1 1 0 0 1 0-1.42zm12.73 12.73a1 1 0 0 1 1.42 0l1.41 1.41a1 1 0 0 1-1.41 1.42l-1.42-1.41a1 1 0 0 1 0-1.42zM1 12a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2H2a1 1 0 0 1-1-1zm18 0a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2h-2a1 1 0 0 1-1-1zM4.22 19.78a1 1 0 0 1 0-1.42l1.41-1.41a1 1 0 1 1 1.42 1.41l-1.41 1.42a1 1 0 0 1-1.42 0zM16.95 7.05a1 1 0 0 1 0-1.42l1.41-1.41a1 1 0 1 1 1.42 1.42l-1.41 1.41a1 1 0 0 1-1.42 0z"/></svg>';
   $('#theme-color-meta').setAttribute('content', SKIN_COLORS[skin][light ? 'light' : 'dark']);
+  $$('#mode-picker [data-mode]').forEach(b => b.setAttribute('aria-pressed', String((themeOverride || 'auto') === b.dataset.mode)));
 }
+/* auto = follow system; light/dark = locked override (persisted). */
+function setMode(m){
+  themeOverride = (m === 'auto') ? null : m;
+  if (themeOverride) localStorage.setItem(THEME_KEY, themeOverride);
+  else localStorage.removeItem(THEME_KEY);
+  applyTheme();
+}
+$$('#mode-picker [data-mode]').forEach(btn =>
+  btn.addEventListener('click', () => setMode(btn.dataset.mode)));
 function applySkin(name){
   skin = name;
   localStorage.setItem(SKIN_KEY, name);
@@ -1179,12 +866,8 @@ function applySkin(name){
 $$('#skin-list [data-skin-pick]').forEach(btn =>
   btn.addEventListener('click', () => applySkin(btn.dataset.skinPick)));
 mqLight.addEventListener('change', applyTheme); // only bites when no override
-$('#theme-toggle').addEventListener('click', () => {
-  const light = document.documentElement.classList.contains('light');
-  themeOverride = light ? 'dark' : 'light';
-  localStorage.setItem(THEME_KEY, themeOverride);
-  applyTheme();
-});
+$('#theme-toggle').addEventListener('click', () =>
+  setMode(document.documentElement.classList.contains('light') ? 'dark' : 'light'));
 
 /* ---------- SERVICE WORKER ---------- */
 function registerSW(){
