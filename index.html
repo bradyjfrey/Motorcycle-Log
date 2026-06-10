@@ -3,17 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-<title>Odo — Ride &amp; Service Log</title>
+<title>Motorcycle Log</title>
 
 <!-- PWA -->
 <link rel="manifest" href="/manifest.webmanifest">
+
+<!-- Google Identity Services: renders the sign-in button for cloud sync -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- Single JS-managed theme-color so the status bar follows a manual theme
      override too (a media-only <meta> can't react to the in-app toggle). -->
 <meta name="theme-color" id="theme-color-meta" content="#141B23">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Odo">
+<meta name="apple-mobile-web-app-title" content="Moto Log">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -300,17 +303,16 @@
 
     <section>
       <span class="eyebrow">Sync across devices</span>
-      <div class="field">
-        <label for="sync-pass">Sync passphrase</label>
-        <input id="sync-pass" class="mono" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="choose a private phrase">
+      <div id="sync-signin" style="margin-bottom:10px;">
+        <div id="gsi-button"></div>
       </div>
+      <div class="hint" id="sync-account" style="margin-bottom:10px;"></div>
       <div class="row">
-        <button class="btn primary" id="sync-connect">Connect</button>
         <button class="btn" id="sync-now">Sync now</button>
       </div>
-      <button class="btn block danger" id="sync-disconnect" style="margin-top:8px; display:none;">Disconnect this device</button>
+      <button class="btn block danger" id="sync-disconnect" style="margin-top:8px; display:none;">Sign out on this device</button>
       <div class="status" id="sync-status"></div>
-      <div class="hint">Enter the same passphrase on every device to share one log. The phrase is the key — anyone who knows it can read and write this data, so pick something private. It never leaves your devices except to fetch and save your own data.</div>
+      <div class="hint">Sign in with the same Google account on every device to share one log. Only an authorized account can connect; you stay signed in for 30 days of inactivity, and any sync restarts that clock. Your data never leaves your devices except to fetch and save your own log.</div>
     </section>
 
     <section>
@@ -350,13 +352,13 @@
 
 <script>
 /* =====================================================================
-   Odo — Ride & Service Log
+   Motorcycle Log (ride & service tracker, formerly "Odo")
    Local-first: localStorage is the source of truth on each device.
    Optional cloud sync merges all devices into one shared log.
    ===================================================================== */
 
 const LS_KEY    = 'odo-state-v1';   // whole-state blob; bump suffix for migrations
-const SYNC_KEY  = 'odo-sync';       // {passphrase, lastSync}
+const SYNC_KEY  = 'odo-sync';       // {email, lastSync, needsAuth}
 const THEME_KEY = 'odo-theme';      // 'light' | 'dark'  (absent = automatic)
 
 const $  = s => document.querySelector(s);
@@ -738,7 +740,7 @@ $('#import-file').addEventListener('change', e => {
       scheduleSync();
       hideOverlay('#settings-overlay');
     }catch{
-      alert('That file is not a valid Odo backup.');
+      alert('That file is not a valid Motorcycle Log backup.');
     }
   };
   reader.readAsText(file);
@@ -746,12 +748,63 @@ $('#import-file').addEventListener('change', e => {
 });
 
 /* ---------- CLOUD SYNC ----------
-   The passphrase is both the identity and the key: the server stores each
-   passphrase's data under a hash of it, so entering the same phrase on two
-   devices points them at the same shared blob. Merge is last-writer-wins per
-   record (by updatedAt); deletions ride along as tombstones. */
+   Identity is a Google account. The sign-in button yields a Google ID token;
+   /api/auth/google verifies it and answers with a signed httpOnly session
+   cookie that every later sync renews (30-day rolling expiry), so sign-in is
+   a roughly once-a-month event per device, not a per-session one. The server
+   keys the shared blob by account email. Merge is last-writer-wins per record
+   (by updatedAt); deletions ride along as tombstones. */
+const GOOGLE_CLIENT_ID = '694449188997-karfjnpcsjp1oph29fblho5bqt8kncvu.apps.googleusercontent.com';
+
 function syncCfg(){ try{ return JSON.parse(localStorage.getItem(SYNC_KEY)) || null; }catch{ return null; } }
-function syncConfigured(){ const c = syncCfg(); return !!(c && c.passphrase); }
+function syncConfigured(){ const c = syncCfg(); return !!(c && c.email); }
+
+/* The GIS script loads async; retry until it lands, then render the button.
+   An explicit width avoids a zero-width iframe when the button is first
+   rendered inside the hidden settings sheet. */
+let gsiReady = false;
+function initGsi(tries = 0){
+  if (gsiReady) return;
+  if (!window.google?.accounts?.id){
+    if (tries < 60) setTimeout(() => initGsi(tries + 1), 250);
+    return;
+  }
+  gsiReady = true;
+  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential });
+  renderGsiButton();
+}
+function renderGsiButton(){
+  const host = $('#gsi-button');
+  if (!gsiReady || !host || host.childElementCount) return;
+  google.accounts.id.renderButton(host, { theme:'filled_blue', size:'large', shape:'pill', text:'signin_with', width: 230 });
+}
+
+async function onGoogleCredential(resp){
+  setSyncStatus('Signing in…', '');
+  try{
+    const res = await fetch('/api/auth/google', {
+      method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({credential: resp.credential}),
+    });
+    if (res.status === 403){ setSyncStatus('That Google account is not allowed on this log.', 'err'); return; }
+    if (!res.ok) throw new Error('auth ' + res.status);
+    const { email } = await res.json();
+    const prev = syncCfg() || {};
+    localStorage.setItem(SYNC_KEY, JSON.stringify({email, lastSync: prev.lastSync}));
+    refreshSyncUI();
+    syncNow();
+  }catch(err){
+    setSyncStatus('Sign-in failed (' + err.message + ').', 'err');
+  }
+}
+
+/* A 401 means the session lapsed (or the cookie was cleared). Keep the email
+   so the UI can say who to sign back in as, but demand a fresh sign-in. */
+function sessionExpired(){
+  const c = syncCfg() || {};
+  localStorage.setItem(SYNC_KEY, JSON.stringify({...c, needsAuth: true}));
+  refreshSyncUI();
+}
 
 function mergeById(x = [], y = [], key = 'id'){
   const m = new Map();
@@ -784,10 +837,9 @@ async function syncNow(){
   syncing = true;
   setSyncStatus('Syncing…', '');
   try{
-    const c = syncCfg();
-    const headers = {'X-Odo-Key': c.passphrase};
-    // 1. Pull remote
-    const res = await fetch('/api/state', {headers});
+    // 1. Pull remote (the session cookie is the credential)
+    const res = await fetch('/api/state');
+    if (res.status === 401) return sessionExpired();
     if (!res.ok) throw new Error('pull ' + res.status);
     const remoteText = await res.text();
     let remote = null;
@@ -800,11 +852,12 @@ async function syncNow(){
     const localText = JSON.stringify(state);
     if (localText !== remoteText){
       const put = await fetch('/api/state', {
-        method:'PUT', headers:{...headers, 'content-type':'application/json'}, body: localText,
+        method:'PUT', headers:{'content-type':'application/json'}, body: localText,
       });
+      if (put.status === 401) return sessionExpired();
       if (!put.ok) throw new Error('push ' + put.status);
     }
-    localStorage.setItem(SYNC_KEY, JSON.stringify({...c, lastSync: Date.now()}));
+    localStorage.setItem(SYNC_KEY, JSON.stringify({...syncCfg(), needsAuth: false, lastSync: Date.now()}));
     setSyncStatus('Synced · ' + new Date().toLocaleTimeString(), 'ok');
   }catch(err){
     setSyncStatus('Offline or sync error (' + err.message + '). Saved locally.', 'err');
@@ -821,26 +874,26 @@ function setSyncStatus(msg, kind){
 }
 function refreshSyncUI(){
   const c = syncCfg();
-  $('#sync-pass').value = c?.passphrase || '';
+  const needsSignIn = !syncConfigured() || !!c.needsAuth;
+  $('#sync-signin').style.display = needsSignIn ? 'block' : 'none';
+  $('#sync-now').style.display = needsSignIn ? 'none' : '';
   $('#sync-disconnect').style.display = syncConfigured() ? 'block' : 'none';
-  if (syncConfigured() && c.lastSync)
+  $('#sync-account').textContent = syncConfigured() ? 'Signed in as ' + c.email : '';
+  if (syncConfigured() && c.needsAuth)
+    setSyncStatus('Session expired. Sign in again to sync.', 'err');
+  else if (syncConfigured() && c.lastSync)
     setSyncStatus('Last synced · ' + new Date(c.lastSync).toLocaleString(), 'ok');
   else if (syncConfigured())
     setSyncStatus('Connected. Not synced yet.', '');
   else
-    setSyncStatus('Not connected — data stays on this device.', '');
+    setSyncStatus('Not connected. Data stays on this device.', '');
+  renderGsiButton();
 }
-$('#sync-connect').addEventListener('click', () => {
-  const pass = $('#sync-pass').value.trim();
-  if (!pass){ setSyncStatus('Enter a passphrase first.', 'err'); return; }
-  localStorage.setItem(SYNC_KEY, JSON.stringify({passphrase: pass}));
-  refreshSyncUI();
-  syncNow();
-});
 $('#sync-now').addEventListener('click', syncNow);
-$('#sync-disconnect').addEventListener('click', () => {
+$('#sync-disconnect').addEventListener('click', async () => {
+  try{ await fetch('/api/auth/logout', {method:'POST'}); }catch{}
+  try{ window.google?.accounts?.id.disableAutoSelect(); }catch{}
   localStorage.removeItem(SYNC_KEY);
-  $('#sync-pass').value = '';
   refreshSyncUI();
 });
 
@@ -881,6 +934,7 @@ function boot(){
   else { state = seedState(); persist(); }
   applyTheme();
   render();
+  initGsi();
   if (syncConfigured()) syncNow();
   registerSW();
 }

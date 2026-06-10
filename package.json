@@ -2,7 +2,7 @@
   "name": "odo",
   "version": "1.0.0",
   "private": true,
-  "description": "Odo — ride & service log for a Honda Rebel 500.",
+  "description": "Motorcycle Log: ride and service tracker for a Honda Rebel 500.",
   "type": "module",
   "dependencies": {
     "@netlify/blobs": "^8.1.0"

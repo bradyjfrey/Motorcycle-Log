@@ -1,4 +1,4 @@
-/* Odo service worker — deliberately tiny.
+/* Motorcycle Log service worker, deliberately tiny.
    Stale-while-revalidate for the static shell; the sync API is never cached. */
 const CACHE = 'odo-v1';
 const ASSETS = [

@@ -1,6 +1,6 @@
 {
-  "name": "Odo — Ride & Service Log",
-  "short_name": "Odo",
+  "name": "Motorcycle Log",
+  "short_name": "Moto Log",
   "description": "Mileage and maintenance tracker for a Honda Rebel 500.",
   "start_url": "/",
   "scope": "/",
