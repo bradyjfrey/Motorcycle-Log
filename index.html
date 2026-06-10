@@ -85,6 +85,11 @@
       <div class="row" style="margin-top:8px;"><button class="btn" id="sync-now">Sync Now</button></div>
     </section>
     <section class="set-group">
+      <span class="eyebrow">Backup</span>
+      <div class="row"><button class="btn" id="export-btn">Export JSON</button></div>
+      <div class="hint">Download your full log as a dated JSON file.</div>
+    </section>
+    <section class="set-group">
       <span class="eyebrow">Appearance</span>
       <div class="mode-picker" id="mode-picker">
         <button data-mode="auto" aria-pressed="true">Auto</button>
@@ -795,6 +800,14 @@ function refreshSyncUI(){
   refreshGate();
 }
 $('#sync-now').addEventListener('click', syncNow);
+$('#export-btn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `motorcycle-log-${todayISO()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
 $('#sync-disconnect').addEventListener('click', async () => {
   try{ await fetch('/api/auth/logout', {method:'POST'}); }catch{}
   // A signed-out device keeps no copy of the log.
