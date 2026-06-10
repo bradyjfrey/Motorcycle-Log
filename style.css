@@ -273,8 +273,11 @@
   .ride .d small{display:block; color:var(--faint); font-size:.76rem; font-family:var(--font-meta); margin-top:2px; font-variant-numeric:tabular-nums;}
   .ride .trip{font-family:var(--font-num); font-weight:600; font-size:1.05rem; color:var(--accent); font-variant-numeric:tabular-nums;}
   .ride .trip small{color:var(--faint); font-weight:500; font-size:.7rem; margin-left:2px;}
-  .ride.service-row .trip{color:var(--warn); font-family:var(--font-name); font-size:.9rem; font-weight:600;}
-  .ride.service-row .d small{color:var(--warn-soft);}
+  /* Service entries read as a filled accent row (rides stay outlined). */
+  .ride.service-row{background:var(--accent); border-color:var(--accent); box-shadow:none;}
+  .ride.service-row .d{color:var(--btn-text);}
+  .ride.service-row .d small{color:var(--btn-text); opacity:.78;}
+  .ride.service-row .trip{color:var(--btn-text); font-family:var(--font-name); font-size:.9rem; font-weight:600;}
   .history-empty{color:var(--faint); text-align:center; padding:40px 0; font-size:.92rem;}
 
   /* ---------- TABS ---------- */
