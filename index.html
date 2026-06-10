@@ -227,6 +227,16 @@
   .status{font-family:'IBM Plex Mono',monospace; font-size:.8rem; color:var(--dim); margin-top:10px; min-height:1em;}
   .status.err{color:var(--orange);}
   .status.ok{color:var(--blue);}
+  /* ---------- SIGN-IN GATE ---------- */
+  #gate{
+    position:fixed; inset:0; z-index:60; background:var(--bg);
+    display:none; align-items:center; justify-content:center; text-align:center;
+    padding:24px env(safe-area-inset-right) 24px env(safe-area-inset-left);
+  }
+  #gate.show{display:flex;}
+  .gate-card{display:flex; flex-direction:column; align-items:center; gap:14px;}
+  .gate-title{font-family:'Barlow Condensed',sans-serif; font-size:2rem; letter-spacing:.08em; text-transform:uppercase;}
+  .gate-sub{color:var(--dim); max-width:32ch; line-height:1.45;}
 </style>
 </head>
 <body>
@@ -302,28 +312,29 @@
     </div>
 
     <section>
-      <span class="eyebrow">Sync across devices</span>
-      <div id="sync-signin" style="margin-bottom:10px;">
-        <div id="gsi-button"></div>
-      </div>
+      <span class="eyebrow">Account</span>
       <div class="hint" id="sync-account" style="margin-bottom:10px;"></div>
       <div class="row">
         <button class="btn" id="sync-now">Sync now</button>
       </div>
       <button class="btn block danger" id="sync-disconnect" style="margin-top:8px; display:none;">Sign out on this device</button>
       <div class="status" id="sync-status"></div>
-      <div class="hint">Sign in with the same Google account on every device to share one log. Only an authorized account can connect; you stay signed in for 30 days of inactivity, and any sync restarts that clock. Your data never leaves your devices except to fetch and save your own log.</div>
+      <div class="hint">Every device signed into this Google account shares one live log; changes elsewhere appear here within about 30 seconds. You stay signed in for 30 days of inactivity, and any sync restarts that clock. Signing out clears this device's copy.</div>
     </section>
 
-    <section>
-      <span class="eyebrow">Backup</span>
-      <div class="row">
-        <button class="btn" id="export-btn">Export JSON</button>
-        <button class="btn" id="import-btn">Import JSON</button>
-      </div>
-      <input type="file" id="import-file" accept="application/json,.json" hidden>
-      <div class="hint">Export downloads a dated snapshot. Import replaces everything on this device with the file's contents. Your safeguard against a browser clearing local storage.</div>
-    </section>
+  </div>
+</div>
+
+<!-- ---------- SIGN-IN GATE ----------
+     The app is online-first: it starts gated and unlocks only after a sync
+     against the server succeeds, so the screen never shows a stale local
+     copy as if it were the shared log. -->
+<div id="gate" class="show">
+  <div class="gate-card">
+    <div class="gate-title">Motorcycle Log</div>
+    <div class="gate-sub">Sign in to see your rides and service history.</div>
+    <div id="gsi-gate-button"></div>
+    <div class="status" id="gate-status"></div>
   </div>
 </div>
 
@@ -353,8 +364,9 @@
 <script>
 /* =====================================================================
    Motorcycle Log (ride & service tracker, formerly "Odo")
-   Local-first: localStorage is the source of truth on each device.
-   Optional cloud sync merges all devices into one shared log.
+   Online-first: the app is gated behind Google sign-in and unlocks after a
+   successful sync. All signed-in devices share one live cloud log;
+   localStorage is just the write buffer between syncs.
    ===================================================================== */
 
 const LS_KEY    = 'odo-state-v1';   // whole-state blob; bump suffix for migrations
@@ -412,8 +424,14 @@ function seedState(){
   };
 }
 
+/* Blank slate for a device that hasn't synced yet. The seed is applied only
+   on the account's very first sync (see syncNow), never shown to a visitor. */
+function emptyState(){
+  return {...seedState(), rides:[], services:[], schedule:[], updatedAt:0};
+}
+
 /* ---------- PERSISTENCE ---------- */
-let state = seedState();
+let state = emptyState();
 
 function loadState(){
   try{
@@ -714,39 +732,6 @@ $('[data-close-settings]').addEventListener('click', () => hideOverlay('#setting
 $('[data-close-edit]').addEventListener('click', () => hideOverlay('#edit-overlay'));
 $('#settings-btn').addEventListener('click', () => { refreshSyncUI(); showOverlay('#settings-overlay'); });
 
-/* ---------- BACKUP: export / import ---------- */
-$('#export-btn').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `odo-backup-${todayISO()}.json`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-});
-$('#import-btn').addEventListener('click', () => $('#import-file').click());
-$('#import-file').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    try{
-      const s = JSON.parse(reader.result);
-      if (!Array.isArray(s.rides) || !Array.isArray(s.services) || !Array.isArray(s.schedule))
-        throw new Error('shape');
-      state = s;
-      state.updatedAt = Date.now();
-      persist();
-      render();
-      scheduleSync();
-      hideOverlay('#settings-overlay');
-    }catch{
-      alert('That file is not a valid Motorcycle Log backup.');
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = ''; // allow re-importing the same filename
-});
-
 /* ---------- CLOUD SYNC ----------
    Identity is a Google account. The sign-in button yields a Google ID token;
    /api/auth/google verifies it and answers with a signed httpOnly session
@@ -774,19 +759,41 @@ function initGsi(tries = 0){
   renderGsiButton();
 }
 function renderGsiButton(){
-  const host = $('#gsi-button');
+  const host = $('#gsi-gate-button');
   if (!gsiReady || !host || host.childElementCount) return;
   google.accounts.id.renderButton(host, { theme:'filled_blue', size:'large', shape:'pill', text:'signin_with', width: 230 });
 }
 
+/* ---------- GATE ----------
+   appUnlocked flips true on the first successful sync of this page load and
+   back to false on sign-out or a lapsed session. While false, the gate covers
+   the app. */
+let appUnlocked = false;
+function setGateStatus(msg, kind){
+  const el = $('#gate-status');
+  el.textContent = msg;
+  el.className = 'status' + (kind ? ' ' + kind : '');
+}
+function refreshGate(){
+  const c = syncCfg();
+  const signedIn = syncConfigured() && !c.needsAuth;
+  $('#gate').classList.toggle('show', !appUnlocked);
+  $('#gsi-gate-button').style.display = signedIn ? 'none' : '';
+  if (!navigator.onLine)   setGateStatus('Offline. Connect to the internet to sign in.', 'err');
+  else if (c?.needsAuth)   setGateStatus('Session expired. Sign in again.', 'err');
+  else if (signedIn)       setGateStatus('Connecting…', '');
+  else                     setGateStatus('', '');
+  renderGsiButton();
+}
+
 async function onGoogleCredential(resp){
-  setSyncStatus('Signing in…', '');
+  setGateStatus('Signing in…', '');
   try{
     const res = await fetch('/api/auth/google', {
       method:'POST', headers:{'content-type':'application/json'},
       body: JSON.stringify({credential: resp.credential}),
     });
-    if (res.status === 403){ setSyncStatus('That Google account is not allowed on this log.', 'err'); return; }
+    if (res.status === 403){ setGateStatus('That Google account is not allowed on this log.', 'err'); return; }
     if (!res.ok) throw new Error('auth ' + res.status);
     const { email } = await res.json();
     const prev = syncCfg() || {};
@@ -794,15 +801,16 @@ async function onGoogleCredential(resp){
     refreshSyncUI();
     syncNow();
   }catch(err){
-    setSyncStatus('Sign-in failed (' + err.message + ').', 'err');
+    setGateStatus('Sign-in failed (' + err.message + ').', 'err');
   }
 }
 
-/* A 401 means the session lapsed (or the cookie was cleared). Keep the email
-   so the UI can say who to sign back in as, but demand a fresh sign-in. */
+/* A 401 means the session lapsed (or the cookie was cleared). Re-gate the
+   app and demand a fresh sign-in. */
 function sessionExpired(){
   const c = syncCfg() || {};
   localStorage.setItem(SYNC_KEY, JSON.stringify({...c, needsAuth: true}));
+  appUnlocked = false;
   refreshSyncUI();
 }
 
@@ -833,7 +841,7 @@ function scheduleSync(){
 }
 
 async function syncNow(){
-  if (!syncConfigured() || syncing) return;
+  if (!syncConfigured() || syncCfg().needsAuth || syncing) return;
   syncing = true;
   setSyncStatus('Syncing…', '');
   try{
@@ -844,6 +852,10 @@ async function syncNow(){
     const remoteText = await res.text();
     let remote = null;
     try{ const r = JSON.parse(remoteText); if (r && Array.isArray(r.rides)) remote = r; }catch{}
+    // The account's very first sync: cloud empty, device empty. Start from
+    // the seed so the maintenance schedule isn't blank.
+    if (!remote && !state.rides.length && !state.services.length && !state.schedule.length)
+      state = seedState();
     // 2. Merge into local
     if (remote) state = mergeStates(state, remote);
     persist();
@@ -859,8 +871,11 @@ async function syncNow(){
     }
     localStorage.setItem(SYNC_KEY, JSON.stringify({...syncCfg(), needsAuth: false, lastSync: Date.now()}));
     setSyncStatus('Synced · ' + new Date().toLocaleTimeString(), 'ok');
+    appUnlocked = true;
+    refreshGate();
   }catch(err){
     setSyncStatus('Offline or sync error (' + err.message + '). Saved locally.', 'err');
+    if (!appUnlocked) setGateStatus("Can't reach the server (" + err.message + '). Retrying…', 'err');
   }finally{
     syncing = false;
   }
@@ -874,32 +889,35 @@ function setSyncStatus(msg, kind){
 }
 function refreshSyncUI(){
   const c = syncCfg();
-  const needsSignIn = !syncConfigured() || !!c.needsAuth;
-  $('#sync-signin').style.display = needsSignIn ? 'block' : 'none';
-  $('#sync-now').style.display = needsSignIn ? 'none' : '';
-  $('#sync-disconnect').style.display = syncConfigured() ? 'block' : 'none';
   $('#sync-account').textContent = syncConfigured() ? 'Signed in as ' + c.email : '';
-  if (syncConfigured() && c.needsAuth)
-    setSyncStatus('Session expired. Sign in again to sync.', 'err');
-  else if (syncConfigured() && c.lastSync)
+  if (syncConfigured() && c.lastSync)
     setSyncStatus('Last synced · ' + new Date(c.lastSync).toLocaleString(), 'ok');
   else if (syncConfigured())
     setSyncStatus('Connected. Not synced yet.', '');
   else
-    setSyncStatus('Not connected. Data stays on this device.', '');
-  renderGsiButton();
+    setSyncStatus('Not signed in.', '');
+  refreshGate();
 }
 $('#sync-now').addEventListener('click', syncNow);
 $('#sync-disconnect').addEventListener('click', async () => {
   try{ await fetch('/api/auth/logout', {method:'POST'}); }catch{}
   try{ window.google?.accounts?.id.disableAutoSelect(); }catch{}
+  // A signed-out device keeps no copy of the log.
   localStorage.removeItem(SYNC_KEY);
+  localStorage.removeItem(LS_KEY);
+  state = emptyState();
+  appUnlocked = false;
+  render();
+  hideOverlay('#settings-overlay');
   refreshSyncUI();
 });
 
 // Opportunistic syncs: returning to the app, or regaining the network.
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
 window.addEventListener('online', syncNow);
+window.addEventListener('offline', refreshGate);
+// Live sync: changes made on another device appear without interaction.
+setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 30_000);
 
 /* ---------- THEME ----------
    Automatic: follows the system day/night setting and tracks changes live.
@@ -929,12 +947,11 @@ function registerSW(){
 
 /* ---------- BOOT ---------- */
 function boot(){
-  const saved = loadState();
-  if (saved){ state = saved; }
-  else { state = seedState(); persist(); }
+  state = loadState() || emptyState();
   applyTheme();
   render();
   initGsi();
+  refreshSyncUI();              // gate stays up until the first sync succeeds
   if (syncConfigured()) syncNow();
   registerSW();
 }

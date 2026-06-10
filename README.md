@@ -11,7 +11,7 @@ One static page, no framework, no build step for the page itself.
 | File | Purpose |
 | --- | --- |
 | `index.html` | The whole app (UI + logic), extended from the original mockup |
-| `manifest.webmanifest`, `sw.js`, `icons/` | PWA: installable, offline-capable shell |
+| `manifest.webmanifest`, `sw.js`, `icons/` | PWA: installable; the service worker only speeds up shell loads |
 | `netlify/functions/state.mjs` | Cloud sync endpoint (`/api/state`) backed by Netlify Blobs |
 | `netlify/functions/auth.mjs` | Google sign-in (`/api/auth/google`) and logout endpoints |
 | `netlify/lib/session.mjs` | Signed session cookie helpers shared by both functions |
@@ -20,23 +20,21 @@ One static page, no framework, no build step for the page itself.
 
 ## How it works
 
-**Local-first.** Each device keeps the full state in `localStorage`
-(`odo-state-v1`). The app works fully offline; every edit saves locally first.
+**Sign-in first.** The app starts gated: nothing but a Sign in with Google
+button shows until an allowlisted account (`ALLOWED_EMAILS` env var) signs in
+and the first sync succeeds. After sign-in the server sets a signed httpOnly
+session cookie good for 30 days; every sync renews it (rolling expiry), so a
+device in regular use stays signed in indefinitely and an idle one asks again
+only after a month away.
 
-**Optional cloud sync.** Open Settings (⚙) → Sign in with Google. Sign in with
-the same account on another device and they share one log, keyed to that
-account. Only allowlisted emails may connect (`ALLOWED_EMAILS` env var). After
-sign-in the server sets a signed httpOnly session cookie good for 30 days;
-every sync renews it (rolling expiry), so a device in regular use stays signed
-in indefinitely and an idle one asks again only after a month away. Sync is
-last-writer-wins per record (by `updatedAt`); deletions propagate as
-tombstones, so two devices converge without losing concurrent rides. Seed
-records use deterministic ids so a fresh device's defaults merge cleanly
-instead of doubling history.
-
-**Backup.** Settings → Export downloads `odo-backup-<date>.json`; Import
-replaces local state from a file. This is the safeguard against a browser
-evicting `localStorage`.
+**One live cloud log.** Every signed-in device shares the same log, keyed to
+the Google account in Netlify Blobs. The app syncs after each edit, on focus,
+on reconnect, and every 30 seconds while open, so a change on one device
+appears on the others without interaction. Merge is last-writer-wins per
+record (by `updatedAt`); deletions propagate as tombstones. `localStorage` is
+only a write buffer between syncs and is cleared on sign-out. There is no
+offline mode; this is an after-the-ride logger. The seed history/schedule is
+applied once, on the account's very first sync.
 
 ## Deploy (Netlify)
 
@@ -62,4 +60,5 @@ functions + the cloud-sync block in `index.html`).
 
 ## Out of scope
 
-GPS, Bluetooth, ride titles, weather, fuel tracking, multi-bike support.
+GPS, Bluetooth, ride titles, weather, fuel tracking, multi-bike support,
+offline use, anonymous/demo access, JSON export/import.
