@@ -20,8 +20,8 @@ const ALLOWED = (process.env.ALLOWED_EMAILS || 'brady@bradyjfrey.com')
   .toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
 
 const STATE_COOKIE = 'odo_oauth_state';
-const stateCookie = (v, maxAge) =>
-  `${STATE_COOKIE}=${v}; Max-Age=${maxAge}; Path=/; HttpOnly; Secure; SameSite=Lax`;
+const stateCookie = (v, maxAge, secure) =>
+  `${STATE_COOKIE}=${v}; Max-Age=${maxAge}; Path=/; HttpOnly;${secure ? ' Secure;' : ''} SameSite=Lax`;
 const back = (origin, code) => new Response(null, {
   status: 302, headers: { location: origin + '/?autherror=' + code },
 });
@@ -30,18 +30,19 @@ export default async (req) => {
   const url = new URL(req.url);
   const route = url.pathname.split('/').pop();
   const redirectUri = url.origin + '/api/auth/callback';
+  const secure = url.protocol === 'https:'; // false only on local netlify dev
 
   try{
     if (route === 'logout'){
       if (req.method !== 'POST') return new Response('method not allowed', { status: 405 });
-      return new Response('ok', { headers: { 'set-cookie': clearedSessionCookie() } });
+      return new Response('ok', { headers: { 'set-cookie': clearedSessionCookie(secure) } });
     }
 
     if (route === 'me'){
       const session = readSession(req);
       if (!session) return new Response('not signed in', { status: 401 });
       return new Response(JSON.stringify({ email: session.email }), {
-        headers: { 'content-type': 'application/json', 'set-cookie': sessionCookie(session.email) },
+        headers: { 'content-type': 'application/json', 'set-cookie': sessionCookie(session.email, secure) },
       });
     }
 
@@ -57,7 +58,7 @@ export default async (req) => {
       });
       return new Response(null, {
         status: 302,
-        headers: { location: auth.href, 'set-cookie': stateCookie(state, 600) },
+        headers: { location: auth.href, 'set-cookie': stateCookie(state, 600, secure) },
       });
     }
 
@@ -97,8 +98,8 @@ export default async (req) => {
       if (!ALLOWED.includes(email)) return back(url.origin, 'not_allowed');
 
       const headers = new Headers({ location: url.origin + '/' });
-      headers.append('set-cookie', sessionCookie(email));
-      headers.append('set-cookie', stateCookie('', 0));
+      headers.append('set-cookie', sessionCookie(email, secure));
+      headers.append('set-cookie', stateCookie('', 0, secure));
       return new Response(null, { status: 302, headers });
     }
 

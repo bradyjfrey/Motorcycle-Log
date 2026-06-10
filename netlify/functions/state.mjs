@@ -20,7 +20,7 @@ export default async (req) => {
     if (req.method !== 'GET' && req.method !== 'PUT' && req.method !== 'POST')
       return new Response('method not allowed', { status: 405 });
 
-    const refresh = { 'set-cookie': sessionCookie(session.email) };
+    const refresh = { 'set-cookie': sessionCookie(session.email, new URL(req.url).protocol === 'https:') };
     const id = createHash('sha256').update('google:' + session.email).digest('hex');
     const store = getStore('odo');
 

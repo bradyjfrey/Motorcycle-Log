@@ -18,17 +18,19 @@ function secret(){
 
 const sign = (data) => createHmac('sha256', secret()).update(data).digest('base64url');
 
-export function sessionCookie(email){
+/* `secure` should be true except on plain-http local dev (netlify dev):
+   browsers refuse to store Secure cookies over http, Safari included. */
+export function sessionCookie(email, secure = true){
   const payload = Buffer.from(JSON.stringify({
     email,
     exp: Date.now() + SESSION_DAYS * 86_400_000,
   })).toString('base64url');
   const token = payload + '.' + sign(payload);
-  return `${COOKIE}=${token}; Max-Age=${SESSION_DAYS * 86_400}; Path=/; HttpOnly; Secure; SameSite=Lax`;
+  return `${COOKIE}=${token}; Max-Age=${SESSION_DAYS * 86_400}; Path=/; HttpOnly;${secure ? ' Secure;' : ''} SameSite=Lax`;
 }
 
-export function clearedSessionCookie(){
-  return `${COOKIE}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`;
+export function clearedSessionCookie(secure = true){
+  return `${COOKIE}=; Max-Age=0; Path=/; HttpOnly;${secure ? ' Secure;' : ''} SameSite=Lax`;
 }
 
 /* Returns {email} for a valid, unexpired session; null otherwise. */

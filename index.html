@@ -11,6 +11,7 @@
      override too (a media-only <meta> can't react to the in-app toggle). -->
 <meta name="theme-color" id="theme-color-meta" content="#16181B">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Moto Log">
@@ -31,15 +32,17 @@
     --bg:#16181B; --panel:#1E2125; --panel-2:#24272C; --line:#2A2D31;
     --card-line:#2A2D31; --card-shadow:none;
     --well:#101214; --nav-bg:rgba(22,24,27,.96);
-    --text:#E2DFDA; --dim:#9BA0A6; --faint:#62676D; --label:#7C828A;
-    --accent:#C2544A; --accent-deep:#6E3029;
-    --warn:#C2544A; --warn-soft:#9A4038; --gauge:#4A4F55;
+    --text:#ECEAE6; --dim:#9BA0A6; --faint:#6E747B; --label:#8A9098;
+    --accent:#E01E37; --accent-deep:#7A1521;
+    --warn:#E01E37; --warn-soft:#B0182B; --gauge:#4A4F55;
     --btn-text:#F7EFEC;
     --radius:16px;
     --font-ui:'Inter',sans-serif;
     --font-label:'Inter',sans-serif;
     --font-display:'Inter',sans-serif;
     --font-num:'Inter',sans-serif;
+    --font-name:'Inter',sans-serif;
+    --font-meta:'Inter',sans-serif;
   }
   :root.light{
     --bg:#F4F4F2; --panel:#FFFFFF; --panel-2:#ECECEA; --line:#E2E2DF;
@@ -51,26 +54,29 @@
     --btn-text:#FFFFFF;
   }
 
-  /* ---- Warm Editorial: paper, ink, oxblood, gold labels, content serif.
-     Cards are borderless by design; elevation comes from a soft shadow. */
+  /* ---- Warm Editorial. Day = cream/white pages on warm paper. Night =
+     dark burgundy ground, cream type, cream-outlined containers (~50%), kept
+     low-glare for night reading. Oxblood is the one filled accent. */
   :root[data-skin="editorial"]{
-    --bg:#221C16; --panel:#2C251E; --panel-2:#352D24; --line:#3E352B;
-    --card-line:transparent; --card-shadow:0 1px 0 rgba(0,0,0,.25);
-    --well:#1A1510; --nav-bg:rgba(34,28,22,.96);
-    --text:#EFE8DC; --dim:#B3A695; --faint:#7E7263; --label:#C9A865;
-    --accent:#C0625C; --accent-deep:#6B302C;
-    --warn:#C0625C; --warn-soft:#A04A44; --gauge:#C9A865;
-    --btn-text:#F8F1E5;
+    --bg:#241317; --panel:#281519; --panel-2:#341E22; --line:rgba(242,231,212,.32);
+    --card-line:rgba(242,231,212,.5); --card-shadow:none;
+    --well:#1C1014; --nav-bg:rgba(36,19,23,.96);
+    --text:#F2E7D4; --dim:#C2A998; --faint:#8F7A6E; --label:#C9A865;
+    --accent:#A8362C; --accent-deep:#6B2018;
+    --warn:#A8362C; --warn-soft:#C2987E; --gauge:#A8843E;
+    --btn-text:#F2E7D4;
     --radius:12px;
     --font-ui:'Source Sans 3',sans-serif;
     --font-label:'Source Sans 3',sans-serif;
     --font-display:'Source Serif 4',Georgia,serif;
     --font-num:'Source Serif 4',Georgia,serif;
+    --font-name:'Source Serif 4',Georgia,serif;
+    --font-meta:'Source Sans 3',sans-serif;
   }
   :root[data-skin="editorial"].light{
     --bg:#FAF6EF; --panel:#FFFFFF; --panel-2:#F5EFE0; --line:#E5DCC8;
     --card-line:transparent;
-    --card-shadow:0 1px 3px rgba(42,31,26,.08), 0 5px 16px rgba(42,31,26,.06);
+    --card-shadow:none;
     --well:#F5EFE0; --nav-bg:rgba(250,246,239,.97);
     --text:#2A1F1A; --dim:#6B5D52; --faint:#9C8E81; --label:#A8843E;
     --accent:#8B2D29; --accent-deep:#DCC3BC;
@@ -81,8 +87,8 @@
   /* ---- Vintage Roadster: cream, near-black, tank red, brass, Oswald
      gauge type. Card borders stay quiet; strong rules are structural only. */
   :root[data-skin="roadster"]{
-    --bg:#171310; --panel:#221C15; --panel-2:#2B241B; --line:#473D30;
-    --card-line:#352D22; --card-shadow:none;
+    --bg:#171310; --panel:#221C15; --panel-2:#2B241B; --line:#564833;
+    --card-line:#564833; --card-shadow:none;
     --well:#100D0A; --nav-bg:rgba(23,19,16,.96);
     --text:#EFE7D6; --dim:#AB9F8B; --faint:#776C5B; --label:#AB9F8B;
     --accent:#C04A3E; --accent-deep:#69302A;
@@ -93,10 +99,12 @@
     --font-label:'Oswald',sans-serif;
     --font-display:'Oswald',sans-serif;
     --font-num:'Oswald',sans-serif;
+    --font-name:'Archivo',sans-serif;
+    --font-meta:'Oswald',sans-serif;
   }
   :root[data-skin="roadster"].light{
-    --bg:#F3EDDF; --panel:#FBF7EC; --panel-2:#ECE4D2; --line:#C8B998;
-    --card-line:#DCD2BA; --card-shadow:none;
+    --bg:#F3EDDF; --panel:#FBF7EC; --panel-2:#ECE4D2; --line:#2E2519;
+    --card-line:#2E2519; --card-shadow:none;
     --well:#EDE5D2; --nav-bg:rgba(243,237,223,.97);
     --text:#1C1813; --dim:#5F574B; --faint:#94897A; --label:#5F574B;
     --accent:#A52A22; --accent-deep:#E0B9B3;
@@ -115,19 +123,24 @@
   }
   .eyebrow{
     font-family:var(--font-label); font-weight:600;
-    text-transform:uppercase; letter-spacing:.14em; font-size:.78rem; color:var(--label);
+    text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; color:var(--label);
   }
   header{
-    padding:18px 20px 10px; display:flex; align-items:center; justify-content:space-between;
+    padding:18px 20px 12px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--line);
   }
   header .right{display:flex; align-items:center; gap:10px;}
   .theme-toggle{
-    width:34px; height:34px; border-radius:50%;
-    background:var(--panel); border:1px solid var(--line); color:var(--dim);
-    font-size:1rem; line-height:1; cursor:pointer;
+    background:none; border:none; color:var(--dim);
+    line-height:1; cursor:pointer; padding:6px 4px;
+    display:inline-flex; align-items:center;
   }
-  header .bike{font-family:var(--font-display); font-weight:600; font-size:1.05rem; letter-spacing:.06em;}
-  header .bike span{color:var(--dim); font-weight:500;}
+  .theme-toggle:hover{color:var(--text);}
+  .theme-toggle svg{width:18px; height:18px; display:block;}
+  #settings-btn svg{width:17px; height:17px;}
+  .hdr-title .eyebrow{margin-bottom:2px;}
+  header .bike{font-family:var(--font-display); font-weight:600; font-size:1.12rem; letter-spacing:-.01em; line-height:1.05;}
+  header .bike span{color:var(--faint); font-weight:400; letter-spacing:0; font-size:.82em;}
   main{flex:1; overflow-y:auto; padding:8px 16px 96px;}
   .screen{display:none;}
   .screen.active{display:block; animation:fade .18s ease;}
@@ -142,20 +155,21 @@
   }
   .odo-card .eyebrow{margin-bottom:12px;}
   .odo-input{
-    display:flex; align-items:center; gap:8px;
+    display:flex; align-items:baseline; gap:8px;
+    padding-bottom:16px; border-bottom:1px solid var(--line);
   }
   .odo-input input{
-    flex:1; background:var(--well); border:1px solid var(--line); border-radius:10px;
+    flex:1; background:transparent; border:none;
     color:var(--text); font-family:var(--font-num); font-weight:600;
-    font-size:2.4rem; letter-spacing:.06em; text-align:right;
+    font-size:3.4rem; line-height:1.1; letter-spacing:.01em; text-align:left;
     font-variant-numeric:tabular-nums;
-    padding:10px 14px; width:100%; outline:none;
+    padding:0; width:100%; outline:none; caret-color:var(--accent);
   }
-  .odo-input input:focus{border-color:var(--accent);}
+  .odo-input input:focus{box-shadow:inset 0 -2px 0 var(--accent);}
   .odo-input .unit{font-family:var(--font-label); color:var(--dim); font-size:1rem; letter-spacing:.1em;}
   .trip-line{
     display:none; justify-content:space-between; align-items:baseline;
-    margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
+    margin-top:14px;
   }
   .trip-line.show{display:flex;}
   .trip-line .lbl{color:var(--dim); font-size:.9rem;}
@@ -167,7 +181,7 @@
     color:var(--btn-text); font-family:var(--font-ui); font-weight:600; font-size:1.05rem;
     cursor:pointer;
   }
-  .save-btn:disabled{background:var(--accent-deep); color:var(--dim); cursor:default;}
+  .save-btn:disabled{background:var(--panel-2); color:var(--faint); cursor:default;}
   .save-btn:focus-visible, .tab:focus-visible, button:focus-visible, input:focus-visible{
     outline:2px solid var(--warn); outline-offset:2px;
   }
@@ -188,8 +202,8 @@
   }
   .svc.tappable{cursor:pointer;}
   .svc-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
-  .svc-name{font-weight:600; font-size:.98rem;}
-  .svc-due{font-family:var(--font-num); font-size:.82rem; color:var(--dim); font-variant-numeric:tabular-nums;}
+  .svc-name{font-family:var(--font-name); font-weight:600; font-size:.98rem;}
+  .svc-due{font-family:var(--font-meta); font-size:.82rem; color:var(--dim); font-variant-numeric:tabular-nums;}
   .svc-due.warn{color:var(--warn); font-weight:600;}
   .gauge{height:6px; background:var(--well); border-radius:4px; overflow:hidden;}
   .gauge i{display:block; height:100%; background:var(--gauge); border-radius:4px;}
@@ -220,11 +234,11 @@
     padding:12px 16px; margin-bottom:6px; border-radius:11px;
     cursor:pointer;
   }
-  .ride .d{font-size:.92rem; color:var(--text);}
-  .ride .d small{display:block; color:var(--faint); font-size:.76rem; font-family:var(--font-num); margin-top:2px; font-variant-numeric:tabular-nums;}
+  .ride .d{font-family:var(--font-name); font-size:.92rem; color:var(--text);}
+  .ride .d small{display:block; color:var(--faint); font-size:.76rem; font-family:var(--font-meta); margin-top:2px; font-variant-numeric:tabular-nums;}
   .ride .trip{font-family:var(--font-num); font-weight:600; font-size:1.05rem; color:var(--accent); font-variant-numeric:tabular-nums;}
   .ride .trip small{color:var(--faint); font-weight:500; font-size:.7rem; margin-left:2px;}
-  .ride.service-row .trip{color:var(--warn); font-family:var(--font-ui); font-size:.9rem; font-weight:600;}
+  .ride.service-row .trip{color:var(--warn); font-family:var(--font-name); font-size:.9rem; font-weight:600;}
   .ride.service-row .d small{color:var(--warn-soft);}
   .history-empty{color:var(--faint); text-align:center; padding:40px 0; font-size:.92rem;}
 
@@ -245,7 +259,7 @@
   .tab svg{width:22px; height:22px; fill:currentColor;}
   .tab.active{color:var(--accent);}
   .tab .dot{
-    position:relative;
+    position:relative; display:flex; align-items:center; justify-content:center;
   }
   .tab .dot::after{
     content:''; position:absolute; top:-2px; right:-4px; width:7px; height:7px;
@@ -337,8 +351,25 @@
   :root[data-skin="editorial"] .month-head .total{font-style:italic;}
   :root[data-skin="editorial"] .gate-title{text-transform:none; letter-spacing:0; font-weight:700;}
   :root[data-skin="editorial"] .save-btn{border-radius:8px;}
+  :root[data-skin="editorial"] .eyebrow{font-weight:700;}
+  /* Editorial NIGHT: dark ground, cream type; a couple of labels go brass
+     for contrast against the burgundy. */
+  :root[data-skin="editorial"]:not(.light) .bike span{color:#C7A998;}
+  :root[data-skin="editorial"]:not(.light) .month-head .total{color:#D9A94A;}
+  :root[data-skin="editorial"]:not(.light) .tab.active{color:#D9A94A;}
+
+  #stripe{display:none; height:6px; flex:none;}
+  #stripe i{display:block; height:100%;}
+  #stripe .r{background:var(--accent); width:70%;}
+  #stripe .b{background:var(--gauge); width:12%;}
+  #stripe .k{background:var(--text); flex:1;}
+  :root[data-skin="roadster"] #stripe{display:flex;}
 
   :root[data-skin="roadster"] .eyebrow{letter-spacing:.2em; font-weight:500;}
+  :root[data-skin="roadster"] .odo-input input{letter-spacing:.06em;}
+  :root[data-skin="roadster"] .bike{text-transform:uppercase; letter-spacing:.04em;}
+  :root[data-skin="roadster"] .odo-input{border-bottom-style:dashed;}
+  :root[data-skin="roadster"] nav{border-top-width:2px;}
   :root[data-skin="roadster"] .save-btn,
   :root[data-skin="roadster"] .btn.primary,
   :root[data-skin="roadster"] .gate-btn{
@@ -348,25 +379,32 @@
   :root[data-skin="roadster"] .gauge i{border-radius:0;}
   :root[data-skin="roadster"] .save-btn{border-radius:6px;}
   :root[data-skin="roadster"] .gate-btn{border-radius:6px;}
+  :root[data-skin="roadster"] .odo-card{box-shadow:3px 3px 0 rgba(28,20,12,.18);}
+  :root[data-skin="roadster"] .save-btn{box-shadow:2px 2px 0 rgba(28,20,12,.55);}
+  :root[data-skin="roadster"] .svc-sub{font-family:var(--font-meta); text-transform:uppercase; letter-spacing:.1em;}
 
-  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .odo-input input{font-weight:300; letter-spacing:0;}
+  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .odo-input input{font-weight:300; letter-spacing:-.01em; font-size:3.8rem;}
+  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) header{border-bottom-color:transparent;}
   :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .gate-title{text-transform:none; letter-spacing:-.01em; font-weight:300;}
   :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .gauge{height:4px;}
+  /* Dark Gauge: active tab keeps a neutral label, icon carries the accent. */
   :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .tab.active{color:var(--text);}
-  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .tab.active svg{stroke:var(--accent);}
+  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .tab.active svg{fill:var(--accent);}
 </style>
 </head>
 <body>
 
+<!-- Roadster-only racing stripe (other skins hide it) -->
+<div id="stripe" aria-hidden="true"><i class="r"></i><i class="b"></i><i class="k"></i></div>
+
 <header>
-  <div>
+  <div class="hdr-title">
     <div class="eyebrow">Ride &amp; service log</div>
     <div class="bike">Rebel 500 <span>· 27D8941</span></div>
   </div>
   <div class="right">
-    <div class="eyebrow" id="hdr-odo"></div>
-    <button class="theme-toggle" id="settings-btn" aria-label="Settings, backup, and sync">⚙</button>
-    <button class="theme-toggle" id="theme-toggle" aria-label="Switch between day and night view">☾</button>
+    <button class="theme-toggle" id="settings-btn" aria-label="Settings and sync"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.14.24.42.34.61.22l2.49-1c.52.39 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.19.12.47.02.61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg></button>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Switch between day and night view"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8 8 0 0 1-9.45-9.45A1 1 0 0 0 9.36 2 10 10 0 1 0 22 14.64a1 1 0 0 0-.36-1.64z"/></svg></button>
   </div>
 </header>
 
@@ -444,7 +482,6 @@
           <span>Vintage Roadster</span><span class="check" aria-hidden="true">✓</span>
         </button>
       </div>
-      <div class="hint">Every theme has day and night versions; the ☾ button or your system setting decides which one you see.</div>
     </section>
 
     <section>
@@ -455,7 +492,6 @@
       </div>
       <button class="btn block danger" id="sync-disconnect" style="margin-top:8px; display:none;">Sign Out on This Device</button>
       <div class="status" id="sync-status"></div>
-      <div class="hint">Every device signed into this Google account shares one live log; changes elsewhere appear here within about 30 seconds. You stay signed in for 30 days of inactivity, and any sync restarts that clock. Signing out clears this device's copy.</div>
     </section>
 
   </div>
@@ -638,7 +674,7 @@ function svcStatus(s){
   if (overdue) dueLabel = 'Overdue';
   else {
     const parts = [];
-    if (miLeft !== null) parts.push(`${fmtMi(miLeft)} mi`);
+    if (miLeft !== null) parts.push(`${fmtMi(miLeft)} miles`);
     if (daysLeft !== null) parts.push(`${daysLeft} days`);
     dueLabel = 'in ' + parts.join(' or ');
   }
@@ -647,7 +683,6 @@ function svcStatus(s){
 
 /* ---------- RENDER ---------- */
 function render(){
-  $('#hdr-odo').textContent = fmtMi(currentOdo()) + ' mi';
   // Don't stomp the odometer field while the rider is mid-edit (a background
   // sync can call render() at any time).
   if (document.activeElement !== odoIn) setOdoDisplay();
@@ -670,8 +705,8 @@ function renderDueSummary(){
 }
 
 function svcCard(s, st, actionable){
-  const subL = s.everyMi ? `every ${fmtMi(s.everyMi)} mi` : '';
-  const subR = s.everyMo ? `every ${s.everyMo} mo` : '';
+  const subL = s.everyMi ? `every ${fmtMi(s.everyMi)} miles` : '';
+  const subR = s.everyMo ? `every ${s.everyMo} months` : '';
   return `<div class="svc${actionable ? ' tappable' : ''}" data-item="${esc(s.item)}">
     <div class="svc-top">
       <span class="svc-name">${esc(s.item)}</span>
@@ -680,7 +715,7 @@ function svcCard(s, st, actionable){
     <div class="gauge"><i class="${st.warn ? 'warn' : ''}" style="width:${Math.round(st.pct*100)}%"></i></div>
     <div class="svc-sub"><span>${subL}</span><span>${subR}</span></div>
     ${actionable ? `<div class="svc-actions"><div class="row">
-        <button class="primary" data-done="${esc(s.item)}">Done today at ${fmtMi(currentOdo())} mi</button>
+        <button class="primary" data-done="${esc(s.item)}">Done today at ${fmtMi(currentOdo())} miles</button>
       </div></div>` : ''}
   </div>`;
 }
@@ -713,17 +748,17 @@ function renderHistory(){
     return `<div class="month-block">
       <div class="month-head">
         <span class="eyebrow">${label}</span>
-        <span class="total">${fmtMi(total)} mi</span>
+        <span class="total">${fmtMi(total)} miles</span>
       </div>
       ${entries.map(e => e.kind === 'ride'
         ? `<div class="ride" data-edit="ride" data-id="${esc(e.id)}">
              <span class="d">${dateLabel(e.date)}
-               <small>odo ${fmtMi(e.odo)}</small></span>
-             <span class="trip">+${e.trip}<small>MI</small></span>
+               <small>${fmtMi(e.odo)} miles</small></span>
+             <span class="trip">+${e.trip} <small>miles</small></span>
            </div>`
         : `<div class="ride service-row" data-edit="service" data-id="${esc(e.id)}">
              <span class="d">${dateLabel(e.date)}
-               <small>service · odo ${fmtMi(e.odo)}</small></span>
+               <small>service · ${fmtMi(e.odo)} miles</small></span>
              <span class="trip">${esc(e.item)}</span>
            </div>`
       ).join('')}
@@ -743,7 +778,7 @@ function setOdoDisplay(){
   odoIn.value = currentOdo();
   tripLine.classList.remove('show');
   saveBtn.disabled = true;
-  saveBtn.textContent = 'Log ride';
+  saveBtn.textContent = 'Log Ride';
 }
 
 /* Tap the odometer, type the new reading over the selected value */
@@ -753,18 +788,18 @@ odoIn.addEventListener('input', () => {
   const v = parseInt(odoIn.value, 10);
   if (!odoIn.value || isNaN(v) || v === currentOdo()){
     tripLine.classList.remove('show'); saveBtn.disabled = true;
-    saveBtn.textContent = 'Log ride'; return;
+    saveBtn.textContent = 'Log Ride'; return;
   }
   const trip = v - currentOdo();
   tripLine.classList.add('show');
   if (trip < 0){
     tripVal.textContent = 'below current reading';
     tripVal.className = 'val neg'; saveBtn.disabled = true;
-    saveBtn.textContent = 'Log ride';
+    saveBtn.textContent = 'Log Ride';
   } else {
-    tripVal.textContent = '+' + fmtMi(trip) + ' mi';
+    tripVal.textContent = '+' + fmtMi(trip) + ' miles';
     tripVal.className = 'val'; saveBtn.disabled = false;
-    saveBtn.textContent = `Log ride · +${fmtMi(trip)} mi`;
+    saveBtn.textContent = `Log Ride · +${fmtMi(trip)} miles`;
   }
 });
 
@@ -780,7 +815,7 @@ saveBtn.addEventListener('click', () => {
   const trip = v - currentOdo();
   state.rides.unshift({id: uid(), date: todayISO(), odo: v, trip, updatedAt: Date.now()});
   saveState();
-  $('#flash').textContent = `Ride saved · +${fmtMi(trip)} mi`;
+  $('#flash').textContent = `Ride saved · +${fmtMi(trip)} miles`;
   $('#flash').classList.add('show');
   setTimeout(() => $('#flash').classList.remove('show'), 1600);
   render();
@@ -1072,7 +1107,7 @@ document.documentElement.dataset.skin = skin; // applied pre-boot to avoid a fla
 function applyTheme(){
   const light = themeOverride ? themeOverride === 'light' : mqLight.matches;
   document.documentElement.classList.toggle('light', light);
-  $('#theme-toggle').textContent = light ? '☾' : '☀︎';
+  $('#theme-toggle').innerHTML = light ? '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8 8 0 0 1-9.45-9.45A1 1 0 0 0 9.36 2 10 10 0 1 0 22 14.64a1 1 0 0 0-.36-1.64z"/></svg>' : '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V2a1 1 0 0 1 1-1zm0 18a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1zM4.22 4.22a1 1 0 0 1 1.42 0l1.41 1.41a1 1 0 1 1-1.41 1.42L4.22 5.64a1 1 0 0 1 0-1.42zm12.73 12.73a1 1 0 0 1 1.42 0l1.41 1.41a1 1 0 0 1-1.41 1.42l-1.42-1.41a1 1 0 0 1 0-1.42zM1 12a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2H2a1 1 0 0 1-1-1zm18 0a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2h-2a1 1 0 0 1-1-1zM4.22 19.78a1 1 0 0 1 0-1.42l1.41-1.41a1 1 0 1 1 1.42 1.41l-1.41 1.42a1 1 0 0 1-1.42 0zM16.95 7.05a1 1 0 0 1 0-1.42l1.41-1.41a1 1 0 1 1 1.42 1.42l-1.41 1.41a1 1 0 0 1-1.42 0z"/></svg>';
   $('#theme-color-meta').setAttribute('content', SKIN_COLORS[skin][light ? 'light' : 'dark']);
 }
 function applySkin(name){
