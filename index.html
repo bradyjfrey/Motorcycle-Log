@@ -467,15 +467,17 @@ function renderHistory(){
         <span class="total">${fmtMi(total)} miles</span>
       </div>
       ${entries.map(e => e.kind === 'ride'
-        ? `<div class="ride" data-edit="ride" data-id="${esc(e.id)}">
+        ? `<div class="ride">
              <span class="d">${dateLabel(e.date)}
                <small>${fmtMi(e.odo)} miles</small></span>
              <span class="trip">+${e.trip} <small>miles</small></span>
+             <button class="edit-pencil" data-edit="ride" data-id="${esc(e.id)}" aria-label="Edit ride"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M88.79,29.297L70.702,11.209c-1.052-1.052-2.756-1.052-3.808,0L17.389,60.713l0.109,0.109l-0.171-0.046l-6.772,25.272 l0.004,0.001c-0.309,0.935-0.103,2.004,0.642,2.748c0.822,0.822,2.038,0.993,3.033,0.531l0.002,0.009l25.027-6.706l-0.016-0.059 l0.038,0.038L88.79,33.105C89.842,32.053,89.842,30.349,88.79,29.297z M18.792,81.147l4.022-15.009l10.988,10.988L18.792,81.147z" /></svg></button>
            </div>`
-        : `<div class="ride service-row" data-edit="service" data-id="${esc(e.id)}">
+        : `<div class="ride service-row">
              <span class="d">${dateLabel(e.date)}
                <small>service · ${fmtMi(e.odo)} miles</small></span>
              <span class="trip">${esc(e.item)}</span>
+             <button class="edit-pencil" data-edit="service" data-id="${esc(e.id)}" aria-label="Edit service"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M88.79,29.297L70.702,11.209c-1.052-1.052-2.756-1.052-3.808,0L17.389,60.713l0.109,0.109l-0.171-0.046l-6.772,25.272 l0.004,0.001c-0.309,0.935-0.103,2.004,0.642,2.748c0.822,0.822,2.038,0.993,3.033,0.531l0.002,0.009l25.027-6.706l-0.016-0.059 l0.038,0.038L88.79,33.105C89.842,32.053,89.842,30.349,88.79,29.297z M18.792,81.147l4.022-15.009l10.988,10.988L18.792,81.147z" /></svg></button>
            </div>`
       ).join('')}
     </div>`;
@@ -621,6 +623,15 @@ $('#edit-save').addEventListener('click', () => {
   } else {
     const rec = recordFor(editing.kind, editing.id);
     if (!rec) return;
+    // Keep the odometer monotonic, otherwise the trip deltas would go negative.
+    const seq = [...activeRides().filter(r => r.id !== editing.id).map(r => ({date:r.date, odo:r.odo})), {date, odo}]
+      .sort((a,b) => a.date.localeCompare(b.date) || a.odo - b.odo);
+    for (let i = 1; i < seq.length; i++){
+      if (seq[i].odo < seq[i-1].odo){
+        $('#edit-status').textContent = 'That odometer is out of order with the rides around it.';
+        return;
+      }
+    }
     rec.date = date; rec.odo = odo; rec.updatedAt = Date.now();
     recomputeTrips();
   }
