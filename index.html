@@ -17,7 +17,7 @@
 <meta name="apple-mobile-web-app-title" content="Moto Log">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;600;700&family=Archivo:wght@400;500;600&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;600;700&family=Archivo:wght@400;500;600&family=Oswald:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   /* =====================================================================
      THEME SYSTEM
@@ -110,6 +110,63 @@
     --accent:#A52A22; --accent-deep:#E0B9B3;
     --warn:#A52A22; --warn-soft:#7E6A37; --gauge:#A8843E;
     --btn-text:#FBF7EC;
+  }
+
+  /* ---- Swiss: International typographic style. Monochrome, Inter, sharp
+     rectangles. Day = ink on paper; night = graphite. Red is kept only as the
+     warning signal (the canonical Swiss red). */
+  :root[data-skin="swiss"]{
+    --bg:#0E1418; --panel:#141A20; --panel-2:#1C242C; --line:rgba(216,221,226,.14);
+    --card-line:rgba(216,221,226,.42); --card-shadow:none;
+    --well:#0A0F12; --nav-bg:rgba(14,20,24,.96);
+    --text:#D8DDE2; --dim:#7A858F; --faint:#3D464F; --label:#7A858F;
+    --accent:#7A9AB3; --accent-deep:#3A4C5C;
+    --warn:#D8584E; --warn-soft:#A8463E; --gauge:#7A9AB3;
+    --btn-text:#0E1418;
+    --radius:0px;
+    --font-ui:'Inter',sans-serif;
+    --font-label:'Inter',sans-serif;
+    --font-display:'Inter',sans-serif;
+    --font-num:'Inter',sans-serif;
+    --font-name:'Inter',sans-serif;
+    --font-meta:'Inter',sans-serif;
+  }
+  :root[data-skin="swiss"].light{
+    --bg:#FFFFFF; --panel:#FFFFFF; --panel-2:#F0F0F0; --line:#000000;
+    --card-line:#000000; --card-shadow:none;
+    --well:#F0F0F0; --nav-bg:rgba(255,255,255,.97);
+    --text:#000000; --dim:#2A2A2A; --faint:#5C5C5C; --label:#000000;
+    --accent:#000000; --accent-deep:#C4C4C4;
+    --warn:#CE1B1B; --warn-soft:#9A1414; --gauge:#000000;
+    --btn-text:#FFFFFF;
+  }
+
+  /* ---- Instrument: scientific-panel look. Fraunces serif headings, JetBrains
+     Mono figures/labels, a blue accent (amber for warnings). */
+  :root[data-skin="instrument"]{
+    --bg:#0E1418; --panel:#141A20; --panel-2:#1C242C; --line:rgba(238,242,246,.08);
+    --card-line:rgba(238,242,246,.2); --card-shadow:none;
+    --well:#0A0F12; --nav-bg:rgba(14,20,24,.96);
+    --text:#EEF2F6; --dim:#6A7480; --faint:#2A333D; --label:#6A7480;
+    --accent:#5AA8E0; --accent-deep:#2A4A63;
+    --warn:#E0863A; --warn-soft:#A8632A; --gauge:#5AA8E0;
+    --btn-text:#0E1418;
+    --radius:3px;
+    --font-ui:'Inter',sans-serif;
+    --font-label:'JetBrains Mono',monospace;
+    --font-display:'Fraunces',serif;
+    --font-num:'JetBrains Mono',monospace;
+    --font-name:'Fraunces',serif;
+    --font-meta:'JetBrains Mono',monospace;
+  }
+  :root[data-skin="instrument"].light{
+    --bg:#FFFFFF; --panel:#FFFFFF; --panel-2:#E4E9ED; --line:#D8DEE4;
+    --card-line:#C8D0D8; --card-shadow:none;
+    --well:#E4E9ED; --nav-bg:rgba(255,255,255,.97);
+    --text:#0A0F14; --dim:#4A5560; --faint:#9BA5B0; --label:#4A5560;
+    --accent:#2165A8; --accent-deep:#AFC6DC;
+    --warn:#C2651A; --warn-soft:#9A4F12; --gauge:#2165A8;
+    --btn-text:#FFFFFF;
   }
 
   html{background:var(--bg);}
@@ -313,18 +370,26 @@
   .status.ok{color:var(--accent);}
 
   /* ---------- THEME PICKER (settings) ---------- */
-  .skin-option{
-    display:flex; align-items:center; gap:10px; width:100%;
-    background:var(--panel-2); color:var(--text); border:1px solid var(--line);
-    border-radius:10px; padding:12px 14px; margin-bottom:8px;
-    font-family:var(--font-ui); font-weight:500; font-size:.92rem;
-    text-align:left; cursor:pointer;
+  .skin-menu-wrap{position:relative; display:inline-flex;}
+  .skin-menu{
+    position:absolute; top:calc(100% + 6px); right:0; z-index:40;
+    min-width:208px; background:var(--panel);
+    border:1px solid var(--line); border-radius:12px;
+    box-shadow:0 12px 32px rgba(0,0,0,.28); padding:5px; display:none;
   }
-  .skin-option[aria-pressed="true"]{border-color:var(--accent); color:var(--accent);}
-  .skin-option .swatches{display:inline-flex; gap:3px;}
-  .skin-option .swatches i{width:12px; height:12px; border-radius:50%; border:1px solid var(--line);}
-  .skin-option .check{margin-left:auto; visibility:hidden;}
-  .skin-option[aria-pressed="true"] .check{visibility:visible;}
+  .skin-menu[data-open="true"]{display:block;}
+  .skin-menu button{
+    display:flex; align-items:center; gap:10px; width:100%;
+    background:none; border:none; color:var(--text);
+    padding:10px 12px; border-radius:8px; cursor:pointer;
+    font-family:var(--font-ui); font-weight:500; font-size:.9rem; text-align:left;
+  }
+  .skin-menu button:hover{background:var(--panel-2);}
+  .skin-menu button[aria-pressed="true"]{color:var(--accent);}
+  .skin-menu .swatches{display:inline-flex; gap:3px; flex:none;}
+  .skin-menu .swatches i{width:13px; height:13px; border-radius:50%; border:1px solid var(--line);}
+  .skin-menu .check{margin-left:auto; visibility:hidden;}
+  .skin-menu button[aria-pressed="true"] .check{visibility:visible;}
 
   /* ---------- SIGN-IN GATE ---------- */
   #gate{
@@ -383,13 +448,26 @@
   :root[data-skin="roadster"] .save-btn{box-shadow:2px 2px 0 rgba(28,20,12,.55);}
   :root[data-skin="roadster"] .svc-sub{font-family:var(--font-meta); text-transform:uppercase; letter-spacing:.1em;}
 
-  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .odo-input input{font-weight:300; letter-spacing:-.01em; font-size:3.8rem;}
-  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) header{border-bottom-color:transparent;}
-  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .gate-title{text-transform:none; letter-spacing:-.01em; font-weight:300;}
-  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .gauge{height:4px;}
+  /* Swiss: sharp rectangles (the radius token doesn't reach every element). */
+  :root[data-skin="swiss"] .save-btn,
+  :root[data-skin="swiss"] .ride,
+  :root[data-skin="swiss"] .gauge,
+  :root[data-skin="swiss"] .gauge i,
+  :root[data-skin="swiss"] .btn,
+  :root[data-skin="swiss"] .field input,
+  :root[data-skin="swiss"] .gate-btn{border-radius:0;}
+  /* Instrument: serif gate title rather than the gauge's lowercase thin one. */
+  :root[data-skin="instrument"] .eyebrow{letter-spacing:.16em;}
+  :root[data-skin="instrument"] .gate-title{text-transform:none; letter-spacing:-.005em; font-weight:500;}
+  :root[data-skin="instrument"] .svc-sub{text-transform:uppercase; letter-spacing:.12em;}
+
+  :root[data-skin="gauge"] .odo-input input{font-weight:300; letter-spacing:-.01em; font-size:3.8rem;}
+  :root[data-skin="gauge"] header{border-bottom-color:transparent;}
+  :root[data-skin="gauge"] .gate-title{text-transform:none; letter-spacing:-.01em; font-weight:300;}
+  :root[data-skin="gauge"] .gauge{height:4px;}
   /* Dark Gauge: active tab keeps a neutral label, icon carries the accent. */
-  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .tab.active{color:var(--text);}
-  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .tab.active svg{fill:var(--accent);}
+  :root[data-skin="gauge"] .tab.active{color:var(--text);}
+  :root[data-skin="gauge"] .tab.active svg{fill:var(--accent);}
 </style>
 </head>
 <body>
@@ -403,6 +481,16 @@
     <div class="bike">Rebel 500 <span>· 27D8941</span></div>
   </div>
   <div class="right">
+    <div class="skin-menu-wrap">
+      <button class="theme-toggle" id="skin-trigger" aria-label="Choose theme" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2" width="9" height="9"/><rect x="7" y="7" width="9" height="9" fill="currentColor"/></svg></button>
+      <div class="skin-menu" id="skin-menu" role="menu" data-open="false">
+        <button role="menuitem" data-skin-pick="gauge" aria-pressed="true"><span class="swatches" aria-hidden="true"><i style="background:#16181B"></i><i style="background:#ECEAE6"></i><i style="background:#E01E37"></i></span><span>Dark Gauge</span><span class="check" aria-hidden="true">✓</span></button>
+        <button role="menuitem" data-skin-pick="editorial" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#FAF6EF"></i><i style="background:#2A1F1A"></i><i style="background:#8B2D29"></i></span><span>Warm Editorial</span><span class="check" aria-hidden="true">✓</span></button>
+        <button role="menuitem" data-skin-pick="roadster" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#F3EDDF"></i><i style="background:#1C1813"></i><i style="background:#A52A22"></i></span><span>Vintage Roadster</span><span class="check" aria-hidden="true">✓</span></button>
+        <button role="menuitem" data-skin-pick="swiss" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#FFFFFF"></i><i style="background:#000000"></i><i style="background:#CE1B1B"></i></span><span>Swiss</span><span class="check" aria-hidden="true">✓</span></button>
+        <button role="menuitem" data-skin-pick="instrument" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#FFFFFF"></i><i style="background:#2165A8"></i><i style="background:#0A0F14"></i></span><span>Instrument</span><span class="check" aria-hidden="true">✓</span></button>
+      </div>
+    </div>
     <button class="theme-toggle" id="settings-btn" aria-label="Settings and sync"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.14.24.42.34.61.22l2.49-1c.52.39 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.19.12.47.02.61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg></button>
     <button class="theme-toggle" id="theme-toggle" aria-label="Switch between day and night view"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8 8 0 0 1-9.45-9.45A1 1 0 0 0 9.36 2 10 10 0 1 0 22 14.64a1 1 0 0 0-.36-1.64z"/></svg></button>
   </div>
@@ -465,24 +553,6 @@
       <span class="title">Settings</span>
       <button class="sheet-close" data-close-settings aria-label="Close">✕</button>
     </div>
-
-    <section>
-      <span class="eyebrow">Theme</span>
-      <div id="skin-list">
-        <button class="skin-option" data-skin-pick="gauge" aria-pressed="true">
-          <span class="swatches" aria-hidden="true"><i style="background:#16181B"></i><i style="background:#E2DFDA"></i><i style="background:#C2544A"></i></span>
-          <span>Dark Gauge</span><span class="check" aria-hidden="true">✓</span>
-        </button>
-        <button class="skin-option" data-skin-pick="editorial" aria-pressed="false">
-          <span class="swatches" aria-hidden="true"><i style="background:#FAF6EF"></i><i style="background:#2A1F1A"></i><i style="background:#8B2D29"></i></span>
-          <span>Warm Editorial</span><span class="check" aria-hidden="true">✓</span>
-        </button>
-        <button class="skin-option" data-skin-pick="roadster" aria-pressed="false">
-          <span class="swatches" aria-hidden="true"><i style="background:#F3EDDF"></i><i style="background:#1C1813"></i><i style="background:#A52A22"></i></span>
-          <span>Vintage Roadster</span><span class="check" aria-hidden="true">✓</span>
-        </button>
-      </div>
-    </section>
 
     <section>
       <span class="eyebrow">Account</span>
@@ -1099,6 +1169,8 @@ const SKIN_COLORS = {
   gauge:     {dark:'#16181B', light:'#F4F4F2'},
   editorial: {dark:'#221C16', light:'#FAF6EF'},
   roadster:  {dark:'#171310', light:'#F3EDDF'},
+  swiss:     {dark:'#0E1418', light:'#FFFFFF'},
+  instrument:{dark:'#0E1418', light:'#FFFFFF'},
 };
 let skin = localStorage.getItem(SKIN_KEY);
 if (!SKIN_COLORS[skin]) skin = 'gauge';
@@ -1114,11 +1186,21 @@ function applySkin(name){
   skin = name;
   localStorage.setItem(SKIN_KEY, name);
   document.documentElement.dataset.skin = name;
-  $$('#skin-list .skin-option').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.skinPick === name)));
+  $$('#skin-menu [data-skin-pick]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.skinPick === name)));
   applyTheme();
 }
-$$('#skin-list .skin-option').forEach(btn =>
-  btn.addEventListener('click', () => applySkin(btn.dataset.skinPick)));
+const skinTrigger = $('#skin-trigger'), skinMenu = $('#skin-menu');
+function setSkinMenu(open){
+  skinMenu.setAttribute('data-open', String(open));
+  skinTrigger.setAttribute('aria-expanded', String(open));
+}
+skinTrigger.addEventListener('click', e => {
+  e.stopPropagation();
+  setSkinMenu(skinMenu.getAttribute('data-open') !== 'true');
+});
+$$('#skin-menu [data-skin-pick]').forEach(btn =>
+  btn.addEventListener('click', () => { applySkin(btn.dataset.skinPick); setSkinMenu(false); }));
+document.addEventListener('click', e => { if (!e.target.closest('.skin-menu-wrap')) setSkinMenu(false); });
 mqLight.addEventListener('change', applyTheme); // only bites when no override
 $('#theme-toggle').addEventListener('click', () => {
   const light = document.documentElement.classList.contains('light');
