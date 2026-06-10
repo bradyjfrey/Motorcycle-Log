@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup · Refined Dark Gauge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Direction 3: REFINED DARK GAUGE. Keep the dark dashboard concept but
+     execute it quietly: neutral graphite (no blue cast), one amber accent
+     used sparingly, Inter with real tabular numerals, thin light dial
+     figures. Less aviation app, more handsome instrument. */
+  :root{
+    --bg:#16181B; --panel:#1E2125; --panel-2:#24272C; --line:#2A2D31;
+    --well:#101214;
+    --text:#ECEAE6; --dim:#9BA0A6; --faint:#62676D;
+    --amber:#E8A33D; --amber-deep:#9A6B25;
+    --ui:'Inter',sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:#0C0E10; font-family:var(--ui); color:var(--text); padding:36px 24px 64px;}
+
+  .intro{max-width:1280px; margin:0 auto 28px;}
+  .intro h1{font-weight:600; font-size:1.6rem; letter-spacing:-.01em;}
+  .intro p{color:var(--dim); margin-top:6px; max-width:64ch;}
+  .chips{display:flex; gap:8px; margin-top:12px;}
+  .chip{width:34px; height:34px; border-radius:50%; border:2px solid #3A3E44;}
+
+  .frames{display:flex; gap:28px; justify-content:center; flex-wrap:wrap; max-width:1280px; margin:0 auto;}
+  .frame{
+    width:390px; min-height:760px; background:var(--bg);
+    border-radius:34px; overflow:hidden; position:relative;
+    box-shadow:0 18px 50px rgba(0,0,0,.6); border:1px solid #303439;
+    display:flex; flex-direction:column;
+  }
+  .frame-label{text-align:center; font-size:.8rem; color:#7C828A; letter-spacing:.12em; text-transform:uppercase; margin:14px 0 10px; width:390px;}
+  .col{display:flex; flex-direction:column; align-items:center;}
+
+  .eyebrow{font-weight:600; text-transform:uppercase; letter-spacing:.14em; font-size:.68rem; color:var(--faint);}
+
+  header{display:flex; justify-content:space-between; align-items:center; padding:22px 22px 14px;}
+  .bike{font-weight:600; font-size:1.05rem; letter-spacing:-.01em; margin-top:3px;}
+  .bike span{color:var(--faint); font-weight:400;}
+  .hdr-right{text-align:right; color:var(--dim); font-size:.78rem; font-variant-numeric:tabular-nums;}
+
+  main{flex:1; padding:14px 18px 90px;}
+
+  /* odometer: thin large numerals, hairline card */
+  .odo-card{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:20px;}
+  .odo-card .eyebrow{margin-bottom:12px;}
+  .odo-val{font-weight:300; font-size:3.8rem; line-height:1; letter-spacing:-.02em; font-variant-numeric:tabular-nums;}
+  .odo-val small{font-size:.9rem; font-weight:500; color:var(--faint); letter-spacing:.16em; margin-left:8px;}
+  .trip-line{display:flex; justify-content:space-between; align-items:baseline; margin-top:16px; padding-top:14px; border-top:1px solid var(--line);}
+  .trip-line .lbl{font-size:.82rem; color:var(--dim);}
+  .trip-line .val{font-weight:500; font-size:1.3rem; color:var(--amber); font-variant-numeric:tabular-nums;}
+  .save-btn{display:block; width:100%; margin-top:16px; background:var(--text); color:#16181B; border:none; border-radius:12px; padding:14px; font-family:var(--ui); font-weight:600; font-size:.95rem;}
+
+  /* service */
+  .next-due{margin-top:26px;}
+  .next-due > .eyebrow{display:block; margin-bottom:12px; padding:0 2px;}
+  .svc{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px;}
+  .svc-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:9px;}
+  .svc-name{font-weight:500; font-size:.92rem;}
+  .svc-due{font-size:.78rem; color:var(--dim); font-variant-numeric:tabular-nums;}
+  .svc-due.warn{color:var(--amber); font-weight:600;}
+  .gauge{height:4px; background:var(--well); border-radius:2px; overflow:hidden;}
+  .gauge i{display:block; height:100%; background:#4A4F55; border-radius:2px;}
+  .gauge i.warn{background:var(--amber);}
+  .svc-sub{margin-top:8px; font-size:.74rem; color:var(--faint); display:flex; justify-content:space-between;}
+
+  /* history */
+  .month-head{display:flex; justify-content:space-between; align-items:baseline; padding:2px 4px 10px;}
+  .month-head .total{font-size:.82rem; color:var(--dim); font-variant-numeric:tabular-nums;}
+  .ride{display:flex; justify-content:space-between; align-items:center; background:var(--panel); border:1px solid var(--line); padding:13px 16px; margin-bottom:6px; border-radius:12px;}
+  .ride .d{font-size:.9rem;}
+  .ride .d small{display:block; color:var(--faint); font-size:.74rem; margin-top:3px; font-variant-numeric:tabular-nums;}
+  .ride .trip{font-weight:500; font-size:1.1rem; font-variant-numeric:tabular-nums;}
+  .ride .trip small{color:var(--faint); font-weight:400; font-size:.66rem; margin-left:3px; letter-spacing:.1em;}
+  .ride.service-row .trip{color:var(--amber); font-size:.84rem; font-weight:500;}
+  .month-block{margin-bottom:22px;}
+
+  /* nav */
+  nav{position:absolute; bottom:0; left:0; right:0; background:rgba(22,24,27,.96); backdrop-filter:blur(8px); border-top:1px solid var(--line); display:flex; padding:10px 0 16px;}
+  .tab{flex:1; background:none; border:none; color:var(--faint); font-family:var(--ui); font-weight:600; font-size:.68rem; text-transform:uppercase; letter-spacing:.12em; display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .tab svg{width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.7;}
+  .tab.active{color:var(--text);}
+  .tab.active svg{stroke:var(--amber);}
+
+  /* gate */
+  .gate{flex:1; display:flex; align-items:center; justify-content:center; text-align:center; background:var(--bg);}
+  .gate-card{display:flex; flex-direction:column; align-items:center; gap:18px; padding:0 30px;}
+  .gate-owner{display:block; font-weight:600; font-size:.72rem; letter-spacing:.44em; color:var(--amber); text-transform:uppercase; margin-bottom:10px;}
+  .gate-title{font-weight:300; font-size:2.3rem; line-height:1.12; letter-spacing:-.01em;}
+  .gate-btn{display:inline-flex; align-items:center; gap:10px; background:var(--text); color:#16181B; text-decoration:none; font-weight:600; font-size:.92rem; padding:13px 26px; border-radius:999px; margin-top:8px;}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Direction 3 · Refined Dark Gauge</h1>
+  <p>The dark dashboard idea executed quietly. Neutral graphite kills the blue cast, one amber accent does all the signaling, and Inter with thin tabular numerals replaces the three competing typefaces. Buttons go warm-white instead of colored.</p>
+  <div class="chips">
+    <span class="chip" style="background:#16181B"></span>
+    <span class="chip" style="background:#1E2125"></span>
+    <span class="chip" style="background:#ECEAE6"></span>
+    <span class="chip" style="background:#E8A33D"></span>
+    <span class="chip" style="background:#9BA0A6"></span>
+  </div>
+</div>
+
+<div class="frames">
+
+  <div class="col">
+    <div class="frame-label">Sign in</div>
+    <div class="frame">
+      <div class="gate">
+        <div class="gate-card">
+          <div>
+            <span class="gate-owner">Brady's</span>
+            <div class="gate-title">Motorcycle Log</div>
+          </div>
+          <a class="gate-btn" href="#">
+            <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.35 11.1H12v3.8h5.35c-.23 1.4-1.66 4.1-5.35 4.1-3.22 0-5.85-2.66-5.85-5.95s2.63-5.95 5.85-5.95c1.83 0 3.06.78 3.76 1.45l2.57-2.47C16.74 4.6 14.6 3.6 12 3.6 6.92 3.6 2.8 7.7 2.8 12.85s4.12 9.25 9.2 9.25c5.31 0 8.83-3.73 8.83-8.98 0-.6-.07-1.06-.18-1.52z"/></svg>
+            Sign in with Google
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="frame-label">Log</div>
+    <div class="frame">
+      <header>
+        <div>
+          <div class="eyebrow">Ride &amp; service log</div>
+          <div class="bike">Rebel 500 <span>· 27D8941</span></div>
+        </div>
+        <div class="hdr-right">825 MI<br>⚙ &nbsp;☾</div>
+      </header>
+      <main>
+        <div class="odo-card">
+          <div class="eyebrow">Odometer</div>
+          <div class="odo-val">825<small>MI</small></div>
+          <div class="trip-line"><span class="lbl">This ride</span><span class="val">+31 mi</span></div>
+          <button class="save-btn">Log ride</button>
+        </div>
+        <div class="next-due">
+          <span class="eyebrow">Coming up</span>
+          <div class="svc">
+            <div class="svc-top"><span class="svc-name">Chain clean &amp; lube</span><span class="svc-due warn">260 mi left</span></div>
+            <div class="gauge"><i class="warn" style="width:35%"></i></div>
+            <div class="svc-sub"><span>every 400 mi</span><span></span></div>
+          </div>
+          <div class="svc">
+            <div class="svc-top"><span class="svc-name">Brake fluid (replace)</span><span class="svc-due">13 mo left</span></div>
+            <div class="gauge"><i style="width:46%"></i></div>
+            <div class="svc-sub"><span></span><span>every 24 mo</span></div>
+          </div>
+          <div class="svc">
+            <div class="svc-top"><span class="svc-name">4,000-mi check</span><span class="svc-due">3,175 mi left</span></div>
+            <div class="gauge"><i style="width:4%"></i></div>
+            <div class="svc-sub"><span>every 4,000 mi</span><span></span></div>
+          </div>
+        </div>
+      </main>
+      <nav>
+        <button class="tab active"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Log</button>
+        <button class="tab"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L4 17l3 3 4.7-4.7a4.5 4.5 0 0 0 6-6l-2.6 2.6-2.4-2.4 2.6-2.6z"/></svg>Service</button>
+        <button class="tab"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l3.5-4 3 2.5L18 8"/></svg>History</button>
+      </nav>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="frame-label">History</div>
+    <div class="frame">
+      <header>
+        <div>
+          <div class="eyebrow">Ride &amp; service log</div>
+          <div class="bike">Rebel 500 <span>· 27D8941</span></div>
+        </div>
+        <div class="hdr-right">825 MI<br>⚙ &nbsp;☾</div>
+      </header>
+      <main>
+        <div class="month-block">
+          <div class="month-head"><span class="eyebrow">June 2026</span><span class="total">83 mi</span></div>
+          <div class="ride"><span class="d">Sun, Jun 7<small>odo 825</small></span><span class="trip">+31<small>MI</small></span></div>
+          <div class="ride"><span class="d">Mon, Jun 1<small>odo 794</small></span><span class="trip">+52<small>MI</small></span></div>
+        </div>
+        <div class="month-block">
+          <div class="month-head"><span class="eyebrow">May 2026</span><span class="total">142 mi</span></div>
+          <div class="ride"><span class="d">Mon, May 25<small>odo 742</small></span><span class="trip">+38<small>MI</small></span></div>
+          <div class="ride"><span class="d">Sun, May 17<small>odo 704</small></span><span class="trip">+64<small>MI</small></span></div>
+          <div class="ride"><span class="d">Sat, May 9<small>odo 640</small></span><span class="trip">+40<small>MI</small></span></div>
+        </div>
+        <div class="month-block">
+          <div class="month-head"><span class="eyebrow">April 2026</span><span class="total">0 mi</span></div>
+          <div class="ride service-row"><span class="d">Thu, Apr 2<small>service · odo 685</small></span><span class="trip">600-mi service</span></div>
+        </div>
+      </main>
+      <nav>
+        <button class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Log</button>
+        <button class="tab"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L4 17l3 3 4.7-4.7a4.5 4.5 0 0 0 6-6l-2.6 2.6-2.4-2.4 2.6-2.6z"/></svg>Service</button>
+        <button class="tab active"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l3.5-4 3 2.5L18 8"/></svg>History</button>
+      </nav>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

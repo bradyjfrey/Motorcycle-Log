@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup · Vintage Roadster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Direction 2: VINTAGE ROADSTER. 1960s Honda brochure: cream, near-black,
+     tank red, brass. Condensed gauge numerals, hairline rules, enamel-badge
+     color discipline. */
+  :root{
+    --cream:#F3EDDF; --card:#FBF7EC;
+    --black:#1C1813; --soft:#5F574B; --faint:#94897A;
+    --red:#A52A22; --brass:#A8843E;
+    --rule:rgba(28,24,19,.28); --rule-strong:#1C1813;
+    --sans:'Archivo',sans-serif;
+    --cond:'Oswald',sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:#E5DCC9; font-family:var(--sans); color:var(--black); padding:36px 24px 64px;}
+
+  .intro{max-width:1280px; margin:0 auto 28px;}
+  .intro h1{font-family:var(--cond); font-weight:600; font-size:1.7rem; text-transform:uppercase; letter-spacing:.06em;}
+  .intro p{color:var(--soft); margin-top:6px; max-width:64ch;}
+  .chips{display:flex; gap:8px; margin-top:12px;}
+  .chip{width:34px; height:34px; border-radius:50%; border:2px solid #fff; box-shadow:0 1px 4px rgba(28,24,19,.3);}
+
+  .frames{display:flex; gap:28px; justify-content:center; flex-wrap:wrap; max-width:1280px; margin:0 auto;}
+  .frame{
+    width:390px; min-height:760px; background:var(--cream);
+    border-radius:34px; overflow:hidden; position:relative;
+    box-shadow:0 18px 50px rgba(28,24,19,.32); border:1px solid var(--rule-strong);
+    display:flex; flex-direction:column;
+  }
+  .frame-label{text-align:center; font-size:.8rem; color:#6B6052; letter-spacing:.12em; text-transform:uppercase; margin:14px 0 10px; width:390px;}
+  .col{display:flex; flex-direction:column; align-items:center;}
+
+  .eyebrow{font-family:var(--cond); font-weight:500; text-transform:uppercase; letter-spacing:.2em; font-size:.72rem; color:var(--soft);}
+
+  /* racing stripe */
+  .stripe{height:6px; display:flex;}
+  .stripe i{display:block; height:100%;}
+  .stripe .r{background:var(--red); flex:0 0 70%;}
+  .stripe .b{background:var(--brass); flex:0 0 12%;}
+  .stripe .k{background:var(--black); flex:1;}
+
+  header{display:flex; justify-content:space-between; align-items:center; padding:18px 22px 12px; border-bottom:1px solid var(--rule-strong);}
+  .bike{font-family:var(--cond); font-weight:600; font-size:1.25rem; text-transform:uppercase; letter-spacing:.05em; margin-top:2px;}
+  .bike span{color:var(--faint); font-weight:400; font-size:.95rem;}
+  .hdr-right{text-align:right; color:var(--soft); font-size:.78rem; letter-spacing:.08em; font-family:var(--cond);}
+
+  main{flex:1; padding:20px 18px 90px;}
+
+  /* odometer: vintage drum counter */
+  .odo-card{background:var(--card); border:1px solid var(--rule-strong); border-radius:6px; padding:18px 20px; box-shadow:3px 3px 0 rgba(28,24,19,.18);}
+  .odo-card .eyebrow{margin-bottom:10px;}
+  .odo-val{font-family:var(--cond); font-weight:600; font-size:3.6rem; line-height:1; letter-spacing:.06em; font-variant-numeric:tabular-nums;}
+  .odo-val small{font-family:var(--cond); font-size:1rem; font-weight:500; color:var(--red); letter-spacing:.2em; margin-left:8px;}
+  .trip-line{display:flex; justify-content:space-between; align-items:baseline; margin-top:14px; padding-top:12px; border-top:1px dashed var(--rule);}
+  .trip-line .lbl{font-size:.82rem; text-transform:uppercase; letter-spacing:.14em; color:var(--soft); font-family:var(--cond);}
+  .trip-line .val{font-family:var(--cond); font-weight:600; font-size:1.45rem; color:var(--red);}
+  .save-btn{display:block; width:100%; margin-top:16px; background:var(--red); color:#FBF7EC; border:none; border-radius:5px; padding:13px; font-family:var(--cond); font-weight:600; font-size:1.02rem; text-transform:uppercase; letter-spacing:.18em; box-shadow:2px 2px 0 var(--black);}
+
+  /* service */
+  .next-due{margin-top:26px;}
+  .next-due > .eyebrow{display:block; margin-bottom:12px;}
+  .svc{background:var(--card); border:1px solid var(--rule-strong); border-radius:6px; padding:14px 16px; margin-bottom:10px;}
+  .svc-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:9px;}
+  .svc-name{font-weight:600; font-size:.95rem;}
+  .svc-due{font-family:var(--cond); font-size:.85rem; color:var(--soft); letter-spacing:.04em;}
+  .svc-due.warn{color:var(--red); font-weight:600;}
+  .gauge{height:8px; background:var(--cream); border:1px solid var(--rule-strong); border-radius:0; overflow:hidden;}
+  .gauge i{display:block; height:100%; background:var(--brass);}
+  .gauge i.warn{background:var(--red);}
+  .svc-sub{margin-top:8px; font-size:.74rem; color:var(--faint); display:flex; justify-content:space-between; text-transform:uppercase; letter-spacing:.1em; font-family:var(--cond);}
+
+  /* history */
+  .month-head{display:flex; justify-content:space-between; align-items:baseline; padding:0 4px 10px;}
+  .month-head .total{font-family:var(--cond); color:var(--red); font-size:.95rem; letter-spacing:.06em;}
+  .ride{display:flex; justify-content:space-between; align-items:center; background:var(--card); border:1px solid var(--rule-strong); padding:12px 16px; margin-bottom:7px; border-radius:5px;}
+  .ride .d{font-size:.92rem; font-weight:500;}
+  .ride .d small{display:block; color:var(--faint); font-size:.7rem; font-family:var(--cond); letter-spacing:.14em; margin-top:3px; text-transform:uppercase;}
+  .ride .trip{font-family:var(--cond); font-weight:600; font-size:1.2rem; color:var(--red);}
+  .ride .trip small{color:var(--faint); font-weight:400; font-size:.66rem; margin-left:3px; letter-spacing:.14em;}
+  .ride.service-row .trip{color:var(--brass); font-size:.85rem; letter-spacing:.06em; text-transform:uppercase;}
+  .month-block{margin-bottom:22px;}
+
+  /* nav */
+  nav{position:absolute; bottom:0; left:0; right:0; background:var(--cream); border-top:2px solid var(--rule-strong); display:flex; padding:10px 0 16px;}
+  .tab{flex:1; background:none; border:none; color:var(--faint); font-family:var(--cond); font-weight:500; font-size:.74rem; text-transform:uppercase; letter-spacing:.2em; display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .tab svg{width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.7;}
+  .tab.active{color:var(--red);}
+
+  /* gate */
+  .gate{flex:1; display:flex; align-items:center; justify-content:center; text-align:center; background:var(--cream); position:relative;}
+  .gate-card{display:flex; flex-direction:column; align-items:center; gap:18px; padding:0 30px;}
+  .gate-owner{display:block; font-family:var(--cond); font-weight:500; font-size:.85rem; letter-spacing:.5em; color:var(--brass); text-transform:uppercase; margin-bottom:8px;}
+  .gate-title{font-family:var(--cond); font-weight:600; font-size:2.7rem; line-height:1.05; text-transform:uppercase; letter-spacing:.04em;}
+  .gate-rules{width:120px; margin:4px auto 8px;}
+  .gate-rules i{display:block; height:2px; background:var(--black); margin-bottom:3px;}
+  .gate-rules i:last-child{background:var(--red);}
+  .gate-btn{display:inline-flex; align-items:center; gap:10px; background:var(--red); color:#FBF7EC; text-decoration:none; font-family:var(--cond); font-weight:600; font-size:.95rem; text-transform:uppercase; letter-spacing:.16em; padding:13px 26px; border-radius:5px; box-shadow:2px 2px 0 var(--black);}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Direction 2 · Vintage Roadster</h1>
+  <p>A 1960s Honda brochure: cream paper, near-black ink, tank red, brass. Condensed gauge numerals like a period speedometer, hairline rules, hard shadows like printed plates.</p>
+  <div class="chips">
+    <span class="chip" style="background:#F3EDDF"></span>
+    <span class="chip" style="background:#1C1813"></span>
+    <span class="chip" style="background:#A52A22"></span>
+    <span class="chip" style="background:#A8843E"></span>
+    <span class="chip" style="background:#FBF7EC"></span>
+  </div>
+</div>
+
+<div class="frames">
+
+  <div class="col">
+    <div class="frame-label">Sign in</div>
+    <div class="frame">
+      <div class="stripe"><i class="r"></i><i class="b"></i><i class="k"></i></div>
+      <div class="gate">
+        <div class="gate-card">
+          <div>
+            <span class="gate-owner">Brady's</span>
+            <div class="gate-title">Motorcycle<br>Log</div>
+          </div>
+          <div class="gate-rules"><i></i><i></i></div>
+          <a class="gate-btn" href="#">
+            <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.35 11.1H12v3.8h5.35c-.23 1.4-1.66 4.1-5.35 4.1-3.22 0-5.85-2.66-5.85-5.95s2.63-5.95 5.85-5.95c1.83 0 3.06.78 3.76 1.45l2.57-2.47C16.74 4.6 14.6 3.6 12 3.6 6.92 3.6 2.8 7.7 2.8 12.85s4.12 9.25 9.2 9.25c5.31 0 8.83-3.73 8.83-8.98 0-.6-.07-1.06-.18-1.52z"/></svg>
+            Sign in with Google
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="frame-label">Log</div>
+    <div class="frame">
+      <div class="stripe"><i class="r"></i><i class="b"></i><i class="k"></i></div>
+      <header>
+        <div>
+          <div class="eyebrow">Ride &amp; service log</div>
+          <div class="bike">Rebel 500 <span>· 27D8941</span></div>
+        </div>
+        <div class="hdr-right">825 MI<br>⚙ &nbsp;☾</div>
+      </header>
+      <main>
+        <div class="odo-card">
+          <div class="eyebrow">Odometer</div>
+          <div class="odo-val">00825<small>MI</small></div>
+          <div class="trip-line"><span class="lbl">This ride</span><span class="val">+31 MI</span></div>
+          <button class="save-btn">Log ride</button>
+        </div>
+        <div class="next-due">
+          <span class="eyebrow">Coming up</span>
+          <div class="svc">
+            <div class="svc-top"><span class="svc-name">Chain clean &amp; lube</span><span class="svc-due warn">260 mi left</span></div>
+            <div class="gauge"><i class="warn" style="width:35%"></i></div>
+            <div class="svc-sub"><span>every 400 mi</span><span></span></div>
+          </div>
+          <div class="svc">
+            <div class="svc-top"><span class="svc-name">Brake fluid (replace)</span><span class="svc-due">13 mo left</span></div>
+            <div class="gauge"><i style="width:46%"></i></div>
+            <div class="svc-sub"><span></span><span>every 24 mo</span></div>
+          </div>
+          <div class="svc">
+            <div class="svc-top"><span class="svc-name">4,000-mi check</span><span class="svc-due">3,175 mi left</span></div>
+            <div class="gauge"><i style="width:4%"></i></div>
+            <div class="svc-sub"><span>every 4,000 mi</span><span></span></div>
+          </div>
+        </div>
+      </main>
+      <nav>
+        <button class="tab active"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Log</button>
+        <button class="tab"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L4 17l3 3 4.7-4.7a4.5 4.5 0 0 0 6-6l-2.6 2.6-2.4-2.4 2.6-2.6z"/></svg>Service</button>
+        <button class="tab"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l3.5-4 3 2.5L18 8"/></svg>History</button>
+      </nav>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="frame-label">History</div>
+    <div class="frame">
+      <div class="stripe"><i class="r"></i><i class="b"></i><i class="k"></i></div>
+      <header>
+        <div>
+          <div class="eyebrow">Ride &amp; service log</div>
+          <div class="bike">Rebel 500 <span>· 27D8941</span></div>
+        </div>
+        <div class="hdr-right">825 MI<br>⚙ &nbsp;☾</div>
+      </header>
+      <main>
+        <div class="month-block">
+          <div class="month-head"><span class="eyebrow">June 2026</span><span class="total">83 MI</span></div>
+          <div class="ride"><span class="d">Sun, Jun 7<small>ODO 825</small></span><span class="trip">+31<small>MI</small></span></div>
+          <div class="ride"><span class="d">Mon, Jun 1<small>ODO 794</small></span><span class="trip">+52<small>MI</small></span></div>
+        </div>
+        <div class="month-block">
+          <div class="month-head"><span class="eyebrow">May 2026</span><span class="total">142 MI</span></div>
+          <div class="ride"><span class="d">Mon, May 25<small>ODO 742</small></span><span class="trip">+38<small>MI</small></span></div>
+          <div class="ride"><span class="d">Sun, May 17<small>ODO 704</small></span><span class="trip">+64<small>MI</small></span></div>
+          <div class="ride"><span class="d">Sat, May 9<small>ODO 640</small></span><span class="trip">+40<small>MI</small></span></div>
+        </div>
+        <div class="month-block">
+          <div class="month-head"><span class="eyebrow">April 2026</span><span class="total">0 MI</span></div>
+          <div class="ride service-row"><span class="d">Thu, Apr 2<small>Service · ODO 685</small></span><span class="trip">600-mi service</span></div>
+        </div>
+      </main>
+      <nav>
+        <button class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Log</button>
+        <button class="tab"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L4 17l3 3 4.7-4.7a4.5 4.5 0 0 0 6-6l-2.6 2.6-2.4-2.4 2.6-2.6z"/></svg>Service</button>
+        <button class="tab active"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l3.5-4 3 2.5L18 8"/></svg>History</button>
+      </nav>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

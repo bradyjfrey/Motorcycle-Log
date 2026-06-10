@@ -9,44 +9,113 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <!-- Single JS-managed theme-color so the status bar follows a manual theme
      override too (a media-only <meta> can't react to the in-app toggle). -->
-<meta name="theme-color" id="theme-color-meta" content="#141B23">
+<meta name="theme-color" id="theme-color-meta" content="#16181B">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Moto Log">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;600;700&family=Archivo:wght@400;500;600&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* =====================================================================
+     THEME SYSTEM
+     Three skins (Dark Gauge / Warm Editorial / Vintage Roadster), each with
+     a night (default) and day (.light) variant. Skins set tokens only; the
+     component rules below consume them. html[data-skin] is set by JS from
+     localStorage before first paint of the app screens.
+     ===================================================================== */
+
+  /* ---- Dark Gauge (default): neutral graphite, one red accent, Inter. */
   :root{
-    --bg:#141B23; --panel:#1C2630; --panel-2:#222F3C; --line:#2D3C4C;
-    --well:#0E141B; --nav-bg:rgba(20,27,35,.96);
-    --text:#E9EEF3; --dim:#8C9BAA; --faint:#5C6B7A;
-    --blue:#5B9BD9; --blue-deep:#3D5A78; --orange:#F08A24; --orange-soft:#C97318;
-    --btn-text:#0C1218;
-    --radius:14px;
+    --bg:#16181B; --panel:#1E2125; --panel-2:#24272C; --line:#2A2D31;
+    --card-line:#2A2D31; --card-shadow:none;
+    --well:#101214; --nav-bg:rgba(22,24,27,.96);
+    --text:#E2DFDA; --dim:#9BA0A6; --faint:#62676D; --label:#7C828A;
+    --accent:#C2544A; --accent-deep:#6E3029;
+    --warn:#C2544A; --warn-soft:#9A4038; --gauge:#4A4F55;
+    --btn-text:#F7EFEC;
+    --radius:16px;
+    --font-ui:'Inter',sans-serif;
+    --font-label:'Inter',sans-serif;
+    --font-display:'Inter',sans-serif;
+    --font-num:'Inter',sans-serif;
   }
-  /* Day view: same instrument logic, daylight surfaces. Applied by system
-     preference (prefers-color-scheme) or the header toggle. */
   :root.light{
-    --bg:#F6F8FA; --panel:#FFFFFF; --panel-2:#F2F5F8; --line:#D9E1E8;
-    --well:#EAEFF4; --nav-bg:rgba(252,253,254,.96);
-    --text:#1A2530; --dim:#5A6A79; --faint:#8C99A6;
-    --blue:#2E6FAE; --blue-deep:#AFC6DC; --orange:#C76A10; --orange-soft:#A65808;
+    --bg:#F4F4F2; --panel:#FFFFFF; --panel-2:#ECECEA; --line:#E2E2DF;
+    --card-line:#E2E2DF; --card-shadow:none;
+    --well:#EBEBE8; --nav-bg:rgba(244,244,242,.96);
+    --text:#1B1D20; --dim:#5E6369; --faint:#9A9FA5; --label:#9A9FA5;
+    --accent:#B3362C; --accent-deep:#E3C2BE;
+    --warn:#B3362C; --warn-soft:#922B22; --gauge:#C6C6C2;
     --btn-text:#FFFFFF;
   }
+
+  /* ---- Warm Editorial: paper, ink, oxblood, gold labels, content serif.
+     Cards are borderless by design; elevation comes from a soft shadow. */
+  :root[data-skin="editorial"]{
+    --bg:#221C16; --panel:#2C251E; --panel-2:#352D24; --line:#3E352B;
+    --card-line:transparent; --card-shadow:0 1px 0 rgba(0,0,0,.25);
+    --well:#1A1510; --nav-bg:rgba(34,28,22,.96);
+    --text:#EFE8DC; --dim:#B3A695; --faint:#7E7263; --label:#C9A865;
+    --accent:#C0625C; --accent-deep:#6B302C;
+    --warn:#C0625C; --warn-soft:#A04A44; --gauge:#C9A865;
+    --btn-text:#F8F1E5;
+    --radius:12px;
+    --font-ui:'Source Sans 3',sans-serif;
+    --font-label:'Source Sans 3',sans-serif;
+    --font-display:'Source Serif 4',Georgia,serif;
+    --font-num:'Source Serif 4',Georgia,serif;
+  }
+  :root[data-skin="editorial"].light{
+    --bg:#FAF6EF; --panel:#FFFFFF; --panel-2:#F5EFE0; --line:#E5DCC8;
+    --card-line:transparent;
+    --card-shadow:0 1px 3px rgba(42,31,26,.08), 0 5px 16px rgba(42,31,26,.06);
+    --well:#F5EFE0; --nav-bg:rgba(250,246,239,.97);
+    --text:#2A1F1A; --dim:#6B5D52; --faint:#9C8E81; --label:#A8843E;
+    --accent:#8B2D29; --accent-deep:#DCC3BC;
+    --warn:#8B2D29; --warn-soft:#B25652; --gauge:#A8843E;
+    --btn-text:#FFFFFF;
+  }
+
+  /* ---- Vintage Roadster: cream, near-black, tank red, brass, Oswald
+     gauge type. Card borders stay quiet; strong rules are structural only. */
+  :root[data-skin="roadster"]{
+    --bg:#171310; --panel:#221C15; --panel-2:#2B241B; --line:#473D30;
+    --card-line:#352D22; --card-shadow:none;
+    --well:#100D0A; --nav-bg:rgba(23,19,16,.96);
+    --text:#EFE7D6; --dim:#AB9F8B; --faint:#776C5B; --label:#AB9F8B;
+    --accent:#C04A3E; --accent-deep:#69302A;
+    --warn:#C04A3E; --warn-soft:#A03E33; --gauge:#C9A865;
+    --btn-text:#F8F1E2;
+    --radius:8px;
+    --font-ui:'Archivo',sans-serif;
+    --font-label:'Oswald',sans-serif;
+    --font-display:'Oswald',sans-serif;
+    --font-num:'Oswald',sans-serif;
+  }
+  :root[data-skin="roadster"].light{
+    --bg:#F3EDDF; --panel:#FBF7EC; --panel-2:#ECE4D2; --line:#C8B998;
+    --card-line:#DCD2BA; --card-shadow:none;
+    --well:#EDE5D2; --nav-bg:rgba(243,237,223,.97);
+    --text:#1C1813; --dim:#5F574B; --faint:#94897A; --label:#5F574B;
+    --accent:#A52A22; --accent-deep:#E0B9B3;
+    --warn:#A52A22; --warn-soft:#7E6A37; --gauge:#A8843E;
+    --btn-text:#FBF7EC;
+  }
+
   html{background:var(--bg);}
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
   body{
     background:var(--bg); color:var(--text);
-    font-family:'Barlow',sans-serif; font-size:16px;
+    font-family:var(--font-ui); font-size:16px;
     max-width:430px; margin:0 auto; min-height:100vh;
     display:flex; flex-direction:column;
   }
   .eyebrow{
-    font-family:'Barlow Condensed',sans-serif; font-weight:600;
-    text-transform:uppercase; letter-spacing:.14em; font-size:.78rem; color:var(--dim);
+    font-family:var(--font-label); font-weight:600;
+    text-transform:uppercase; letter-spacing:.14em; font-size:.78rem; color:var(--label);
   }
   header{
     padding:18px 20px 10px; display:flex; align-items:center; justify-content:space-between;
@@ -57,7 +126,7 @@
     background:var(--panel); border:1px solid var(--line); color:var(--dim);
     font-size:1rem; line-height:1; cursor:pointer;
   }
-  header .bike{font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:1.05rem; letter-spacing:.06em;}
+  header .bike{font-family:var(--font-display); font-weight:600; font-size:1.05rem; letter-spacing:.06em;}
   header .bike span{color:var(--dim); font-weight:500;}
   main{flex:1; overflow-y:auto; padding:8px 16px 96px;}
   .screen{display:none;}
@@ -67,7 +136,8 @@
 
   /* ---------- LOG SCREEN ---------- */
   .odo-card{
-    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--panel); border:1px solid var(--card-line); border-radius:var(--radius);
+    box-shadow:var(--card-shadow);
     padding:20px 18px 22px; margin-top:6px;
   }
   .odo-card .eyebrow{margin-bottom:12px;}
@@ -76,32 +146,33 @@
   }
   .odo-input input{
     flex:1; background:var(--well); border:1px solid var(--line); border-radius:10px;
-    color:var(--text); font-family:'IBM Plex Mono',monospace; font-weight:600;
+    color:var(--text); font-family:var(--font-num); font-weight:600;
     font-size:2.4rem; letter-spacing:.06em; text-align:right;
+    font-variant-numeric:tabular-nums;
     padding:10px 14px; width:100%; outline:none;
   }
-  .odo-input input:focus{border-color:var(--blue);}
-  .odo-input .unit{font-family:'Barlow Condensed',sans-serif; color:var(--dim); font-size:1rem; letter-spacing:.1em;}
+  .odo-input input:focus{border-color:var(--accent);}
+  .odo-input .unit{font-family:var(--font-label); color:var(--dim); font-size:1rem; letter-spacing:.1em;}
   .trip-line{
     display:none; justify-content:space-between; align-items:baseline;
     margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
   }
   .trip-line.show{display:flex;}
   .trip-line .lbl{color:var(--dim); font-size:.9rem;}
-  .trip-line .val{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:1.3rem; color:var(--blue);}
-  .trip-line .val.neg{color:var(--orange);}
+  .trip-line .val{font-family:var(--font-num); font-weight:600; font-size:1.3rem; color:var(--accent); font-variant-numeric:tabular-nums;}
+  .trip-line .val.neg{color:var(--warn);}
   .save-btn{
     width:100%; margin-top:16px; padding:15px;
-    background:var(--blue); border:none; border-radius:12px;
-    color:var(--btn-text); font-family:'Barlow',sans-serif; font-weight:600; font-size:1.05rem;
+    background:var(--accent); border:none; border-radius:12px;
+    color:var(--btn-text); font-family:var(--font-ui); font-weight:600; font-size:1.05rem;
     cursor:pointer;
   }
-  .save-btn:disabled{background:var(--blue-deep); color:var(--dim); cursor:default;}
+  .save-btn:disabled{background:var(--accent-deep); color:var(--dim); cursor:default;}
   .save-btn:focus-visible, .tab:focus-visible, button:focus-visible, input:focus-visible{
-    outline:2px solid var(--orange); outline-offset:2px;
+    outline:2px solid var(--warn); outline-offset:2px;
   }
   .saved-flash{
-    margin-top:10px; text-align:center; font-size:.9rem; color:var(--blue);
+    margin-top:10px; text-align:center; font-size:.9rem; color:var(--accent);
     opacity:0; transition:opacity .25s;
   }
   .saved-flash.show{opacity:1;}
@@ -111,27 +182,28 @@
 
   /* ---------- SERVICE GAUGES ---------- */
   .svc{
-    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--panel); border:1px solid var(--card-line); border-radius:var(--radius);
+    box-shadow:var(--card-shadow);
     padding:14px 16px; margin-bottom:10px;
   }
   .svc.tappable{cursor:pointer;}
   .svc-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
   .svc-name{font-weight:600; font-size:.98rem;}
-  .svc-due{font-family:'IBM Plex Mono',monospace; font-size:.82rem; color:var(--dim);}
-  .svc-due.warn{color:var(--orange); font-weight:600;}
-  .gauge{height:7px; background:var(--well); border-radius:4px; overflow:hidden;}
-  .gauge i{display:block; height:100%; background:var(--blue); border-radius:4px;}
-  .gauge i.warn{background:var(--orange);}
+  .svc-due{font-family:var(--font-num); font-size:.82rem; color:var(--dim); font-variant-numeric:tabular-nums;}
+  .svc-due.warn{color:var(--warn); font-weight:600;}
+  .gauge{height:6px; background:var(--well); border-radius:4px; overflow:hidden;}
+  .gauge i{display:block; height:100%; background:var(--gauge); border-radius:4px;}
+  .gauge i.warn{background:var(--warn);}
   .svc-sub{margin-top:7px; font-size:.8rem; color:var(--faint);
     display:flex; justify-content:space-between;}
   .svc-actions{margin-top:10px; display:none;}
   .svc.open .svc-actions{display:block;}
   .svc-actions button{
     background:var(--panel-2); color:var(--text); border:1px solid var(--line);
-    border-radius:9px; padding:9px 14px; font-family:'Barlow',sans-serif;
+    border-radius:9px; padding:9px 14px; font-family:var(--font-ui);
     font-weight:500; font-size:.9rem; cursor:pointer;
   }
-  .svc-actions button.primary{background:var(--orange); border-color:var(--orange); color:var(--btn-text); font-weight:600;}
+  .svc-actions button.primary{background:var(--warn); border-color:var(--warn); color:var(--btn-text); font-weight:600;}
   .svc-actions .row{display:flex; gap:8px;}
 
   /* ---------- HISTORY ---------- */
@@ -140,19 +212,20 @@
     display:flex; justify-content:space-between; align-items:baseline;
     padding:0 4px 8px;
   }
-  .month-head .total{font-family:'IBM Plex Mono',monospace; font-size:.85rem; color:var(--blue);}
+  .month-head .total{font-family:var(--font-num); font-size:.85rem; color:var(--accent); font-variant-numeric:tabular-nums;}
   .ride{
     display:flex; justify-content:space-between; align-items:center;
-    background:var(--panel); border:1px solid var(--line);
+    background:var(--panel); border:1px solid var(--card-line);
+    box-shadow:var(--card-shadow);
     padding:12px 16px; margin-bottom:6px; border-radius:11px;
     cursor:pointer;
   }
   .ride .d{font-size:.92rem; color:var(--text);}
-  .ride .d small{display:block; color:var(--faint); font-size:.76rem; font-family:'IBM Plex Mono',monospace; margin-top:2px;}
-  .ride .trip{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:1.05rem; color:var(--blue);}
+  .ride .d small{display:block; color:var(--faint); font-size:.76rem; font-family:var(--font-num); margin-top:2px; font-variant-numeric:tabular-nums;}
+  .ride .trip{font-family:var(--font-num); font-weight:600; font-size:1.05rem; color:var(--accent); font-variant-numeric:tabular-nums;}
   .ride .trip small{color:var(--faint); font-weight:500; font-size:.7rem; margin-left:2px;}
-  .ride.service-row .trip{color:var(--orange); font-family:'Barlow',sans-serif; font-size:.9rem; font-weight:600;}
-  .ride.service-row .d small{color:var(--orange-soft);}
+  .ride.service-row .trip{color:var(--warn); font-family:var(--font-ui); font-size:.9rem; font-weight:600;}
+  .ride.service-row .d small{color:var(--warn-soft);}
   .history-empty{color:var(--faint); text-align:center; padding:40px 0; font-size:.92rem;}
 
   /* ---------- TABS ---------- */
@@ -165,22 +238,22 @@
   }
   .tab{
     flex:1; background:none; border:none; color:var(--faint);
-    font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:.82rem;
+    font-family:var(--font-label); font-weight:600; font-size:.82rem;
     text-transform:uppercase; letter-spacing:.12em; cursor:pointer;
     display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0;
   }
-  .tab svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.8;}
-  .tab.active{color:var(--blue);}
+  .tab svg{width:22px; height:22px; fill:currentColor;}
+  .tab.active{color:var(--accent);}
   .tab .dot{
     position:relative;
   }
   .tab .dot::after{
     content:''; position:absolute; top:-2px; right:-4px; width:7px; height:7px;
-    border-radius:50%; background:var(--orange); display:var(--badge,none);
+    border-radius:50%; background:var(--warn); display:var(--badge,none);
   }
 
   /* ---------- SHEETS (settings + history edit) ----------
-     Additive UI for features the mockup didn't cover (backup, sync, row edit).
+     Additive UI for features the mockup didn't cover (sync, row edit).
      Built from the same tokens; the three core screens are untouched. */
   .overlay{
     position:fixed; inset:0; background:rgba(0,0,0,.5);
@@ -198,7 +271,7 @@
   }
   .overlay.show .sheet{transform:translate(-50%,0);}
   .sheet-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
-  .sheet-head .title{font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:1.15rem; letter-spacing:.04em;}
+  .sheet-head .title{font-family:var(--font-display); font-weight:600; font-size:1.15rem; letter-spacing:.04em;}
   .sheet-close{background:none; border:none; color:var(--dim); font-size:1.4rem; line-height:1; cursor:pointer; padding:4px 6px;}
   .sheet section{margin-bottom:20px;}
   .sheet section .eyebrow{margin-bottom:10px; display:block;}
@@ -206,24 +279,39 @@
   .field label{display:block; color:var(--dim); font-size:.8rem; margin-bottom:5px;}
   .field input{
     width:100%; background:var(--well); border:1px solid var(--line); border-radius:10px;
-    color:var(--text); font-family:'Barlow',sans-serif; font-size:1rem; padding:11px 12px; outline:none;
+    color:var(--text); font-family:var(--font-ui); font-size:1rem; padding:11px 12px; outline:none;
   }
-  .field input:focus{border-color:var(--blue);}
-  .field input.mono{font-family:'IBM Plex Mono',monospace;}
+  .field input:focus{border-color:var(--accent);}
+  .field input.mono{font-family:var(--font-num); font-variant-numeric:tabular-nums;}
   .btn{
     background:var(--panel-2); color:var(--text); border:1px solid var(--line);
-    border-radius:10px; padding:11px 14px; font-family:'Barlow',sans-serif;
+    border-radius:10px; padding:11px 14px; font-family:var(--font-ui);
     font-weight:500; font-size:.92rem; cursor:pointer;
   }
-  .btn.primary{background:var(--blue); border-color:var(--blue); color:var(--btn-text); font-weight:600;}
-  .btn.danger{background:none; border-color:var(--orange); color:var(--orange); font-weight:600;}
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:var(--btn-text); font-weight:600;}
+  .btn.danger{background:none; border-color:var(--warn); color:var(--warn); font-weight:600;}
   .btn.block{display:block; width:100%;}
   .row{display:flex; gap:8px;}
   .row .btn{flex:1;}
   .hint{color:var(--faint); font-size:.8rem; margin-top:8px; line-height:1.45;}
-  .status{font-family:'IBM Plex Mono',monospace; font-size:.8rem; color:var(--dim); margin-top:10px; min-height:1em;}
-  .status.err{color:var(--orange);}
-  .status.ok{color:var(--blue);}
+  .status{font-family:var(--font-num); font-size:.8rem; color:var(--dim); margin-top:10px; min-height:1em;}
+  .status.err{color:var(--warn);}
+  .status.ok{color:var(--accent);}
+
+  /* ---------- THEME PICKER (settings) ---------- */
+  .skin-option{
+    display:flex; align-items:center; gap:10px; width:100%;
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:12px 14px; margin-bottom:8px;
+    font-family:var(--font-ui); font-weight:500; font-size:.92rem;
+    text-align:left; cursor:pointer;
+  }
+  .skin-option[aria-pressed="true"]{border-color:var(--accent); color:var(--accent);}
+  .skin-option .swatches{display:inline-flex; gap:3px;}
+  .skin-option .swatches i{width:12px; height:12px; border-radius:50%; border:1px solid var(--line);}
+  .skin-option .check{margin-left:auto; visibility:hidden;}
+  .skin-option[aria-pressed="true"] .check{visibility:visible;}
+
   /* ---------- SIGN-IN GATE ---------- */
   #gate{
     position:fixed; inset:0; z-index:60; background:var(--bg);
@@ -232,15 +320,40 @@
   }
   #gate.show{display:flex;}
   .gate-card{display:flex; flex-direction:column; align-items:center; gap:14px;}
-  .gate-title{font-family:'Barlow Condensed',sans-serif; font-size:2.2rem; line-height:1.1; letter-spacing:.08em; text-transform:uppercase;}
-  .gate-owner{display:block; font-size:1rem; font-weight:600; letter-spacing:.3em; color:var(--dim); margin-bottom:4px;}
+  .gate-title{font-family:var(--font-display); font-size:2.2rem; line-height:1.1; letter-spacing:.08em; text-transform:uppercase; font-weight:600;}
+  .gate-owner{display:block; font-family:var(--font-label); font-size:1rem; font-weight:600; letter-spacing:.3em; color:var(--label); margin-bottom:4px; text-transform:uppercase;}
   .gate-btn{
     display:inline-flex; align-items:center; gap:9px; margin-top:6px;
-    background:var(--blue); color:var(--btn-text); text-decoration:none;
-    font-family:'Barlow',sans-serif; font-weight:600; font-size:.92rem;
+    background:var(--accent); color:var(--btn-text); text-decoration:none;
+    font-family:var(--font-ui); font-weight:600; font-size:.92rem;
     padding:12px 22px; border-radius:999px;
   }
   .gate-btn:active{opacity:.85;}
+
+  /* ---------- PER-SKIN VOICE ----------
+     Small typographic moves the tokens can't express. */
+  :root[data-skin="editorial"] .trip-line .lbl,
+  :root[data-skin="editorial"] .svc-sub{font-family:var(--font-num); font-style:italic;}
+  :root[data-skin="editorial"] .month-head .total{font-style:italic;}
+  :root[data-skin="editorial"] .gate-title{text-transform:none; letter-spacing:0; font-weight:700;}
+  :root[data-skin="editorial"] .save-btn{border-radius:8px;}
+
+  :root[data-skin="roadster"] .eyebrow{letter-spacing:.2em; font-weight:500;}
+  :root[data-skin="roadster"] .save-btn,
+  :root[data-skin="roadster"] .btn.primary,
+  :root[data-skin="roadster"] .gate-btn{
+    font-family:var(--font-label); text-transform:uppercase; letter-spacing:.14em; font-weight:500;
+  }
+  :root[data-skin="roadster"] .gauge{border-radius:0; height:8px;}
+  :root[data-skin="roadster"] .gauge i{border-radius:0;}
+  :root[data-skin="roadster"] .save-btn{border-radius:6px;}
+  :root[data-skin="roadster"] .gate-btn{border-radius:6px;}
+
+  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .odo-input input{font-weight:300; letter-spacing:0;}
+  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .gate-title{text-transform:none; letter-spacing:-.01em; font-weight:300;}
+  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .gauge{height:4px;}
+  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .tab.active{color:var(--text);}
+  :root:not([data-skin="editorial"]):not([data-skin="roadster"]) .tab.active svg{stroke:var(--accent);}
 </style>
 </head>
 <body>
@@ -270,7 +383,7 @@
         <span class="lbl" id="trip-lbl">This ride</span>
         <span class="val" id="trip-val">—</span>
       </div>
-      <button class="save-btn" id="save-ride" disabled>Log ride</button>
+      <button class="save-btn" id="save-ride" disabled>Log Ride</button>
       <div class="saved-flash" id="flash">Ride saved</div>
     </div>
 
@@ -294,15 +407,15 @@
 
 <nav>
   <button class="tab active" data-screen="log" aria-label="Log a ride">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M80.761,17.26h-0.019c0.001-0.049,0.015-0.095,0.015-0.145c0-2.893-2.346-5.245-5.241-5.245 c-0.04,0-0.076,0.011-0.116,0.012H60.842V8.48h0l0-0.002c0-0.881-0.714-1.593-1.593-1.595V6.875H40.8v0.006 c-0.015,0-0.028-0.004-0.043-0.004c-0.88,0-1.594,0.713-1.594,1.594c0,0.01,0.003,0.02,0.003,0.03v3.38H24.501 c-0.007,0-0.013-0.002-0.02-0.002c-2.893,0-5.242,2.354-5.242,5.243c0,0.047,0.013,0.09,0.014,0.137h-0.014v70.572h0.003 c0,0.009-0.003,0.018-0.003,0.027c0,2.895,2.35,5.238,5.243,5.238c0.078,0,0.151-0.02,0.229-0.023v0.021h50.5 c0.098,0.005,0.191,0.029,0.29,0.029c2.894,0,5.239-2.348,5.239-5.238c0-0.019-0.005-0.036-0.005-0.055h0.028V17.26z M70.822,83.185H29.178V21.809h4.997v3.069c-0.002,0.033-0.01,0.063-0.01,0.097c0,0.998,0.81,1.814,1.814,1.814 c0.005,0,0.009-0.001,0.014-0.001v0.008h28.027c1.005-0.002,1.813-0.816,1.813-1.813c0-0.015-0.004-0.029-0.004-0.044v-3.13h4.992 V83.185z"/> <path d="M39.15,41.119c0-0.658-0.537-1.195-1.198-1.195c-0.031,0-0.058,0.015-0.088,0.018v-0.018h-2.502 c-0.661,0-1.199,0.539-1.199,1.197v2.595h0l0,0.002c0,0.656,0.537,1.193,1.199,1.193h0.001h2.502v-0.018 c0.03,0.002,0.056,0.018,0.086,0.018c0.663,0,1.2-0.537,1.2-1.193l0-0.002h0v-2.595H39.15L39.15,41.119z"/> <path d="M65.831,41.119c0-0.658-0.537-1.195-1.198-1.195c-0.001,0-0.001,0-0.002,0H45.337c-0.661,0-1.199,0.539-1.199,1.197v2.595 h0l0,0.002c0,0.656,0.537,1.193,1.199,1.193h0.001h19.294c0.663,0,1.2-0.537,1.2-1.193l0-0.002h0v-2.595h-0.001L65.831,41.119z"/> <path d="M39.15,51.094c0-0.658-0.537-1.195-1.198-1.195c-0.031,0-0.058,0.015-0.088,0.018v-0.018h-2.502 c-0.661,0-1.199,0.539-1.199,1.197v2.595h0l0,0.002c0,0.656,0.537,1.193,1.199,1.193h0.001h2.502v-0.018 c0.03,0.002,0.056,0.018,0.086,0.018c0.663,0,1.2-0.537,1.2-1.193l0-0.002h0v-2.595H39.15L39.15,51.094z"/> <path d="M65.831,51.094c0-0.658-0.537-1.195-1.198-1.195c-0.001,0-0.001,0-0.002,0H45.337c-0.661,0-1.199,0.539-1.199,1.197v2.595 h0l0,0.002c0,0.656,0.537,1.193,1.199,1.193h0.001h19.294c0.663,0,1.2-0.537,1.2-1.193l0-0.002h0v-2.595h-0.001L65.831,51.094z"/> <path d="M39.15,61.069c0-0.658-0.537-1.195-1.198-1.195c-0.031,0-0.058,0.015-0.088,0.018v-0.018h-2.502 c-0.661,0-1.199,0.539-1.199,1.197v2.595h0l0,0.002c0,0.656,0.537,1.193,1.199,1.193h0.001h2.502v-0.018 c0.03,0.002,0.056,0.018,0.086,0.018c0.663,0,1.2-0.537,1.2-1.193l0-0.002h0v-2.595H39.15L39.15,61.069z"/> <path d="M65.831,61.069c0-0.658-0.537-1.195-1.198-1.195c-0.001,0-0.001,0-0.002,0H45.337c-0.661,0-1.199,0.539-1.199,1.197v2.595 h0l0,0.002c0,0.656,0.537,1.193,1.199,1.193h0.001h19.294c0.663,0,1.2-0.537,1.2-1.193l0-0.002h0v-2.595h-0.001L65.831,61.069z"/></svg>
     Log
   </button>
   <button class="tab" data-screen="service" id="tab-service" aria-label="Maintenance">
-    <span class="dot"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L4 17l3 3 4.7-4.7a4.5 4.5 0 0 0 6-6l-2.6 2.6-2.4-2.4 2.6-2.6z"/></svg></span>
+    <span class="dot"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M86.257,23.405l-3.866,3.866l-3.737,3.737l-4.759,4.759c-2.521,0.161-5.096-0.713-7.023-2.64 c-1.927-1.927-2.8-4.502-2.64-7.023l4.759-4.759l3.737-3.737l3.866-3.866c0.251-0.251,0.251-0.659,0-0.911 c-0.046-0.046-0.101-0.074-0.155-0.103l0.001-0.001c-0.003-0.001-0.007-0.003-0.01-0.004c-0.034-0.017-0.066-0.032-0.102-0.043 c-2.677-1.193-5.629-1.878-8.749-1.878c-11.939,0-21.618,9.679-21.618,21.618c0,2.28,0.358,4.475,1.012,6.538L24.428,61.504 c-7.545,0.122-13.627,6.267-13.627,13.842c0,7.65,6.203,13.853,13.853,13.853c7.574,0,13.72-6.083,13.842-13.628l22.546-22.546 c2.063,0.654,4.259,1.012,6.539,1.012c11.939,0,21.618-9.679,21.618-21.618c0-3.118-0.686-6.066-1.877-8.742 c-0.012-0.041-0.029-0.079-0.05-0.118c-0.008-0.017-0.014-0.035-0.022-0.052l-0.007,0.007c-0.024-0.037-0.041-0.078-0.074-0.111 C86.916,23.153,86.509,23.153,86.257,23.405z M30.378,75.346c0,3.161-2.563,5.724-5.724,5.724c-3.161,0-5.724-2.563-5.724-5.724 c0-3.162,2.563-5.725,5.724-5.725C27.815,69.621,30.378,72.184,30.378,75.346z"/></svg></span>
     Service
   </button>
   <button class="tab" data-screen="history" aria-label="Ride history">
-    <svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l3.5-4 3 2.5L18 8"/></svg>
+    <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M82.063,22.284h-0.006c-0.029-0.874-0.734-1.573-1.612-1.589v-0.003h-3.36l-0.001,60.404l0.001,0.01 c0,0.9-0.721,1.627-1.617,1.644v0.005l-50.906-0.002c-0.816,0-1.488-0.595-1.619-1.375v-3.602h47.405v-0.003 c0.011,0,0.021,0.003,0.031,0.003c0.91,0,1.646-0.735,1.646-1.646c0-0.006-0.002-0.012-0.002-0.012l0.002-62.202 c0-0.91-0.736-1.647-1.646-1.646c-0.01,0-0.02,0.003-0.03,0.003v-0.004h-5.756v13.022v16.291v5.639 c0,0.434-0.353,0.785-0.787,0.785c-0.228,0-0.429-0.101-0.573-0.255l-5.667-5.667h-0.019c-0.126-0.145-0.306-0.241-0.513-0.241 c-0.207,0-0.387,0.096-0.513,0.241h-0.019l-5.709,5.709h-0.009c-0.14,0.13-0.325,0.214-0.532,0.214 c-0.434,0-0.786-0.352-0.786-0.785v-5.639V25.292V12.27l-29.883,0c-0.91,0-1.646,0.736-1.646,1.646 c0,0.021,0.006,0.042,0.006,0.063l0,59.237v12.807c-0.001,0.02-0.006,0.039-0.006,0.059s0.005,0.039,0.006,0.059v0.076h0.008 c0.07,0.845,0.769,1.511,1.632,1.511v0.001l60.833,0.002h0.029v-0.003c0.896-0.016,1.617-0.743,1.617-1.643l-0.001-0.01 L82.063,22.284z"/></svg>
     History
   </button>
 </nav>
@@ -316,12 +429,31 @@
     </div>
 
     <section>
+      <span class="eyebrow">Theme</span>
+      <div id="skin-list">
+        <button class="skin-option" data-skin-pick="gauge" aria-pressed="true">
+          <span class="swatches" aria-hidden="true"><i style="background:#16181B"></i><i style="background:#E2DFDA"></i><i style="background:#C2544A"></i></span>
+          <span>Dark Gauge</span><span class="check" aria-hidden="true">✓</span>
+        </button>
+        <button class="skin-option" data-skin-pick="editorial" aria-pressed="false">
+          <span class="swatches" aria-hidden="true"><i style="background:#FAF6EF"></i><i style="background:#2A1F1A"></i><i style="background:#8B2D29"></i></span>
+          <span>Warm Editorial</span><span class="check" aria-hidden="true">✓</span>
+        </button>
+        <button class="skin-option" data-skin-pick="roadster" aria-pressed="false">
+          <span class="swatches" aria-hidden="true"><i style="background:#F3EDDF"></i><i style="background:#1C1813"></i><i style="background:#A52A22"></i></span>
+          <span>Vintage Roadster</span><span class="check" aria-hidden="true">✓</span>
+        </button>
+      </div>
+      <div class="hint">Every theme has day and night versions; the ☾ button or your system setting decides which one you see.</div>
+    </section>
+
+    <section>
       <span class="eyebrow">Account</span>
       <div class="hint" id="sync-account" style="margin-bottom:10px;"></div>
       <div class="row">
-        <button class="btn" id="sync-now">Sync now</button>
+        <button class="btn" id="sync-now">Sync Now</button>
       </div>
-      <button class="btn block danger" id="sync-disconnect" style="margin-top:8px; display:none;">Sign out on this device</button>
+      <button class="btn block danger" id="sync-disconnect" style="margin-top:8px; display:none;">Sign Out on This Device</button>
       <div class="status" id="sync-status"></div>
       <div class="hint">Every device signed into this Google account shares one live log; changes elsewhere appear here within about 30 seconds. You stay signed in for 30 days of inactivity, and any sync restarts that clock. Signing out clears this device's copy.</div>
     </section>
@@ -378,6 +510,7 @@
 const LS_KEY    = 'odo-state-v1';   // whole-state blob; bump suffix for migrations
 const SYNC_KEY  = 'odo-sync';       // {email, lastSync, needsAuth}
 const THEME_KEY = 'odo-theme';      // 'light' | 'dark'  (absent = automatic)
+const SKIN_KEY  = 'odo-skin';       // 'gauge' | 'editorial' | 'roadster'
 
 const $  = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
@@ -924,12 +1057,33 @@ setInterval(() => {
    means automatic. */
 const mqLight = matchMedia('(prefers-color-scheme: light)');
 let themeOverride = localStorage.getItem(THEME_KEY); // 'light' | 'dark' | null
+
+/* Skins: which of the three designs is active. Day/night (above) cuts
+   across all of them. The status-bar color tracks both. */
+const SKIN_COLORS = {
+  gauge:     {dark:'#16181B', light:'#F4F4F2'},
+  editorial: {dark:'#221C16', light:'#FAF6EF'},
+  roadster:  {dark:'#171310', light:'#F3EDDF'},
+};
+let skin = localStorage.getItem(SKIN_KEY);
+if (!SKIN_COLORS[skin]) skin = 'gauge';
+document.documentElement.dataset.skin = skin; // applied pre-boot to avoid a flash
+
 function applyTheme(){
   const light = themeOverride ? themeOverride === 'light' : mqLight.matches;
   document.documentElement.classList.toggle('light', light);
   $('#theme-toggle').textContent = light ? '☾' : '☀︎';
-  $('#theme-color-meta').setAttribute('content', light ? '#F6F8FA' : '#141B23');
+  $('#theme-color-meta').setAttribute('content', SKIN_COLORS[skin][light ? 'light' : 'dark']);
 }
+function applySkin(name){
+  skin = name;
+  localStorage.setItem(SKIN_KEY, name);
+  document.documentElement.dataset.skin = name;
+  $$('#skin-list .skin-option').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.skinPick === name)));
+  applyTheme();
+}
+$$('#skin-list .skin-option').forEach(btn =>
+  btn.addEventListener('click', () => applySkin(btn.dataset.skinPick)));
 mqLight.addEventListener('change', applyTheme); // only bites when no override
 $('#theme-toggle').addEventListener('click', () => {
   const light = document.documentElement.classList.contains('light');
@@ -947,7 +1101,7 @@ function registerSW(){
 /* ---------- BOOT ---------- */
 function boot(){
   state = loadState() || emptyState();
-  applyTheme();
+  applySkin(skin);
   render();
   refreshSyncUI();              // gate stays up until the first sync succeeds
   const autherror = new URLSearchParams(location.search).get('autherror');
