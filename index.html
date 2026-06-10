@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Odo — Ride &amp; Service Log</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.webmanifest">
+<!-- Single JS-managed theme-color so the status bar follows a manual theme
+     override too (a media-only <meta> can't react to the in-app toggle). -->
+<meta name="theme-color" id="theme-color-meta" content="#141B23">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Odo">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#141B23; --panel:#1C2630; --panel-2:#222F3C; --line:#2D3C4C;
+    --well:#0E141B; --nav-bg:rgba(20,27,35,.96);
+    --text:#E9EEF3; --dim:#8C9BAA; --faint:#5C6B7A;
+    --blue:#5B9BD9; --blue-deep:#3D5A78; --orange:#F08A24; --orange-soft:#C97318;
+    --btn-text:#0C1218;
+    --radius:14px;
+  }
+  /* Day view: same instrument logic, daylight surfaces. Applied by system
+     preference (prefers-color-scheme) or the header toggle. */
+  :root.light{
+    --bg:#F6F8FA; --panel:#FFFFFF; --panel-2:#F2F5F8; --line:#D9E1E8;
+    --well:#EAEFF4; --nav-bg:rgba(252,253,254,.96);
+    --text:#1A2530; --dim:#5A6A79; --faint:#8C99A6;
+    --blue:#2E6FAE; --blue-deep:#AFC6DC; --orange:#C76A10; --orange-soft:#A65808;
+    --btn-text:#FFFFFF;
+  }
+  html{background:var(--bg);}
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Barlow',sans-serif; font-size:16px;
+    max-width:430px; margin:0 auto; min-height:100vh;
+    display:flex; flex-direction:column;
+  }
+  .eyebrow{
+    font-family:'Barlow Condensed',sans-serif; font-weight:600;
+    text-transform:uppercase; letter-spacing:.14em; font-size:.78rem; color:var(--dim);
+  }
+  header{
+    padding:18px 20px 10px; display:flex; align-items:center; justify-content:space-between;
+  }
+  header .right{display:flex; align-items:center; gap:10px;}
+  .theme-toggle{
+    width:34px; height:34px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--line); color:var(--dim);
+    font-size:1rem; line-height:1; cursor:pointer;
+  }
+  header .bike{font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:1.05rem; letter-spacing:.06em;}
+  header .bike span{color:var(--dim); font-weight:500;}
+  main{flex:1; overflow-y:auto; padding:8px 16px 96px;}
+  .screen{display:none;}
+  .screen.active{display:block; animation:fade .18s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+  @media (prefers-reduced-motion: reduce){ .screen.active{animation:none;} }
+
+  /* ---------- LOG SCREEN ---------- */
+  .odo-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px 18px 22px; margin-top:6px;
+  }
+  .odo-card .eyebrow{margin-bottom:12px;}
+  .odo-input{
+    display:flex; align-items:center; gap:8px;
+  }
+  .odo-input input{
+    flex:1; background:var(--well); border:1px solid var(--line); border-radius:10px;
+    color:var(--text); font-family:'IBM Plex Mono',monospace; font-weight:600;
+    font-size:2.4rem; letter-spacing:.06em; text-align:right;
+    padding:10px 14px; width:100%; outline:none;
+  }
+  .odo-input input:focus{border-color:var(--blue);}
+  .odo-input .unit{font-family:'Barlow Condensed',sans-serif; color:var(--dim); font-size:1rem; letter-spacing:.1em;}
+  .trip-line{
+    display:none; justify-content:space-between; align-items:baseline;
+    margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
+  }
+  .trip-line.show{display:flex;}
+  .trip-line .lbl{color:var(--dim); font-size:.9rem;}
+  .trip-line .val{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:1.3rem; color:var(--blue);}
+  .trip-line .val.neg{color:var(--orange);}
+  .save-btn{
+    width:100%; margin-top:16px; padding:15px;
+    background:var(--blue); border:none; border-radius:12px;
+    color:var(--btn-text); font-family:'Barlow',sans-serif; font-weight:600; font-size:1.05rem;
+    cursor:pointer;
+  }
+  .save-btn:disabled{background:var(--blue-deep); color:var(--dim); cursor:default;}
+  .save-btn:focus-visible, .tab:focus-visible, button:focus-visible, input:focus-visible{
+    outline:2px solid var(--orange); outline-offset:2px;
+  }
+  .saved-flash{
+    margin-top:10px; text-align:center; font-size:.9rem; color:var(--blue);
+    opacity:0; transition:opacity .25s;
+  }
+  .saved-flash.show{opacity:1;}
+
+  .next-due{margin-top:22px;}
+  .next-due .eyebrow{margin-bottom:10px;}
+
+  /* ---------- SERVICE GAUGES ---------- */
+  .svc{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px 16px; margin-bottom:10px;
+  }
+  .svc.tappable{cursor:pointer;}
+  .svc-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
+  .svc-name{font-weight:600; font-size:.98rem;}
+  .svc-due{font-family:'IBM Plex Mono',monospace; font-size:.82rem; color:var(--dim);}
+  .svc-due.warn{color:var(--orange); font-weight:600;}
+  .gauge{height:7px; background:var(--well); border-radius:4px; overflow:hidden;}
+  .gauge i{display:block; height:100%; background:var(--blue); border-radius:4px;}
+  .gauge i.warn{background:var(--orange);}
+  .svc-sub{margin-top:7px; font-size:.8rem; color:var(--faint);
+    display:flex; justify-content:space-between;}
+  .svc-actions{margin-top:10px; display:none;}
+  .svc.open .svc-actions{display:block;}
+  .svc-actions button{
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line);
+    border-radius:9px; padding:9px 14px; font-family:'Barlow',sans-serif;
+    font-weight:500; font-size:.9rem; cursor:pointer;
+  }
+  .svc-actions button.primary{background:var(--orange); border-color:var(--orange); color:var(--btn-text); font-weight:600;}
+  .svc-actions .row{display:flex; gap:8px;}
+
+  /* ---------- HISTORY ---------- */
+  .month-block{margin-bottom:18px;}
+  .month-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:0 4px 8px;
+  }
+  .month-head .total{font-family:'IBM Plex Mono',monospace; font-size:.85rem; color:var(--blue);}
+  .ride{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--panel); border:1px solid var(--line);
+    padding:12px 16px; margin-bottom:6px; border-radius:11px;
+    cursor:pointer;
+  }
+  .ride .d{font-size:.92rem; color:var(--text);}
+  .ride .d small{display:block; color:var(--faint); font-size:.76rem; font-family:'IBM Plex Mono',monospace; margin-top:2px;}
+  .ride .trip{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:1.05rem; color:var(--blue);}
+  .ride .trip small{color:var(--faint); font-weight:500; font-size:.7rem; margin-left:2px;}
+  .ride.service-row .trip{color:var(--orange); font-family:'Barlow',sans-serif; font-size:.9rem; font-weight:600;}
+  .ride.service-row .d small{color:var(--orange-soft);}
+  .history-empty{color:var(--faint); text-align:center; padding:40px 0; font-size:.92rem;}
+
+  /* ---------- TABS ---------- */
+  nav{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:430px;
+    background:var(--nav-bg); backdrop-filter:blur(8px);
+    border-top:1px solid var(--line);
+    display:flex; padding:6px 0 calc(8px + env(safe-area-inset-bottom));
+  }
+  .tab{
+    flex:1; background:none; border:none; color:var(--faint);
+    font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:.82rem;
+    text-transform:uppercase; letter-spacing:.12em; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0;
+  }
+  .tab svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.8;}
+  .tab.active{color:var(--blue);}
+  .tab .dot{
+    position:relative;
+  }
+  .tab .dot::after{
+    content:''; position:absolute; top:-2px; right:-4px; width:7px; height:7px;
+    border-radius:50%; background:var(--orange); display:var(--badge,none);
+  }
+
+  /* ---------- SHEETS (settings + history edit) ----------
+     Additive UI for features the mockup didn't cover (backup, sync, row edit).
+     Built from the same tokens; the three core screens are untouched. */
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.5);
+    opacity:0; visibility:hidden; transition:opacity .2s ease; z-index:30;
+  }
+  .overlay.show{opacity:1; visibility:visible;}
+  .sheet{
+    position:fixed; left:50%; bottom:0; transform:translate(-50%,100%);
+    width:100%; max-width:430px;
+    background:var(--panel); border-top:1px solid var(--line);
+    border-radius:18px 18px 0 0;
+    padding:18px 18px calc(20px + env(safe-area-inset-bottom));
+    transition:transform .22s ease; z-index:31;
+    max-height:88vh; overflow-y:auto;
+  }
+  .overlay.show .sheet{transform:translate(-50%,0);}
+  .sheet-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .sheet-head .title{font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:1.15rem; letter-spacing:.04em;}
+  .sheet-close{background:none; border:none; color:var(--dim); font-size:1.4rem; line-height:1; cursor:pointer; padding:4px 6px;}
+  .sheet section{margin-bottom:20px;}
+  .sheet section .eyebrow{margin-bottom:10px; display:block;}
+  .field{margin-bottom:12px;}
+  .field label{display:block; color:var(--dim); font-size:.8rem; margin-bottom:5px;}
+  .field input{
+    width:100%; background:var(--well); border:1px solid var(--line); border-radius:10px;
+    color:var(--text); font-family:'Barlow',sans-serif; font-size:1rem; padding:11px 12px; outline:none;
+  }
+  .field input:focus{border-color:var(--blue);}
+  .field input.mono{font-family:'IBM Plex Mono',monospace;}
+  .btn{
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:11px 14px; font-family:'Barlow',sans-serif;
+    font-weight:500; font-size:.92rem; cursor:pointer;
+  }
+  .btn.primary{background:var(--blue); border-color:var(--blue); color:var(--btn-text); font-weight:600;}
+  .btn.danger{background:none; border-color:var(--orange); color:var(--orange); font-weight:600;}
+  .btn.block{display:block; width:100%;}
+  .row{display:flex; gap:8px;}
+  .row .btn{flex:1;}
+  .hint{color:var(--faint); font-size:.8rem; margin-top:8px; line-height:1.45;}
+  .status{font-family:'IBM Plex Mono',monospace; font-size:.8rem; color:var(--dim); margin-top:10px; min-height:1em;}
+  .status.err{color:var(--orange);}
+  .status.ok{color:var(--blue);}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="eyebrow">Ride &amp; service log</div>
+    <div class="bike">Rebel 500 <span>· 27D8941</span></div>
+  </div>
+  <div class="right">
+    <div class="eyebrow" id="hdr-odo"></div>
+    <button class="theme-toggle" id="settings-btn" aria-label="Settings, backup, and sync">⚙</button>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Switch between day and night view">☾</button>
+  </div>
+</header>
+
+<main>
+  <!-- LOG -->
+  <section class="screen active" id="screen-log">
+    <div class="odo-card">
+      <div class="eyebrow">Odometer</div>
+      <div class="odo-input">
+        <input id="odo-in" type="text" inputmode="numeric" pattern="[0-9]*" aria-label="Odometer reading in miles; edit to log a ride">
+        <span class="unit">MI</span>
+      </div>
+      <div class="trip-line" id="trip-line">
+        <span class="lbl" id="trip-lbl">This ride</span>
+        <span class="val" id="trip-val">—</span>
+      </div>
+      <button class="save-btn" id="save-ride" disabled>Log ride</button>
+      <div class="saved-flash" id="flash">Ride saved</div>
+    </div>
+
+    <div class="next-due">
+      <div class="eyebrow">Coming up</div>
+      <div id="due-summary"></div>
+    </div>
+  </section>
+
+  <!-- SERVICE -->
+  <section class="screen" id="screen-service">
+    <div class="eyebrow" style="margin:6px 4px 12px;">Maintenance schedule</div>
+    <div id="svc-list"></div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="screen" id="screen-history">
+    <div id="history-list"></div>
+  </section>
+</main>
+
+<nav>
+  <button class="tab active" data-screen="log" aria-label="Log a ride">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    Log
+  </button>
+  <button class="tab" data-screen="service" id="tab-service" aria-label="Maintenance">
+    <span class="dot"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L4 17l3 3 4.7-4.7a4.5 4.5 0 0 0 6-6l-2.6 2.6-2.4-2.4 2.6-2.6z"/></svg></span>
+    Service
+  </button>
+  <button class="tab" data-screen="history" aria-label="Ride history">
+    <svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l3.5-4 3 2.5L18 8"/></svg>
+    History
+  </button>
+</nav>
+
+<!-- ---------- SETTINGS / BACKUP / SYNC SHEET ---------- -->
+<div class="overlay" id="settings-overlay">
+  <div class="sheet" role="dialog" aria-label="Settings">
+    <div class="sheet-head">
+      <span class="title">Settings</span>
+      <button class="sheet-close" data-close-settings aria-label="Close">✕</button>
+    </div>
+
+    <section>
+      <span class="eyebrow">Sync across devices</span>
+      <div class="field">
+        <label for="sync-pass">Sync passphrase</label>
+        <input id="sync-pass" class="mono" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="choose a private phrase">
+      </div>
+      <div class="row">
+        <button class="btn primary" id="sync-connect">Connect</button>
+        <button class="btn" id="sync-now">Sync now</button>
+      </div>
+      <button class="btn block danger" id="sync-disconnect" style="margin-top:8px; display:none;">Disconnect this device</button>
+      <div class="status" id="sync-status"></div>
+      <div class="hint">Enter the same passphrase on every device to share one log. The phrase is the key — anyone who knows it can read and write this data, so pick something private. It never leaves your devices except to fetch and save your own data.</div>
+    </section>
+
+    <section>
+      <span class="eyebrow">Backup</span>
+      <div class="row">
+        <button class="btn" id="export-btn">Export JSON</button>
+        <button class="btn" id="import-btn">Import JSON</button>
+      </div>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+      <div class="hint">Export downloads a dated snapshot. Import replaces everything on this device with the file's contents. Your safeguard against a browser clearing local storage.</div>
+    </section>
+  </div>
+</div>
+
+<!-- ---------- HISTORY EDIT SHEET ---------- -->
+<div class="overlay" id="edit-overlay">
+  <div class="sheet" role="dialog" aria-label="Edit entry">
+    <div class="sheet-head">
+      <span class="title" id="edit-title">Edit ride</span>
+      <button class="sheet-close" data-close-edit aria-label="Close">✕</button>
+    </div>
+    <div class="field">
+      <label for="edit-date">Date</label>
+      <input id="edit-date" type="date">
+    </div>
+    <div class="field">
+      <label for="edit-odo">Odometer (mi)</label>
+      <input id="edit-odo" class="mono" type="text" inputmode="numeric" pattern="[0-9]*">
+    </div>
+    <div class="row" style="margin-top:6px;">
+      <button class="btn primary" id="edit-save">Save</button>
+      <button class="btn danger" id="edit-delete">Delete</button>
+    </div>
+    <div class="status err" id="edit-status"></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   Odo — Ride & Service Log
+   Local-first: localStorage is the source of truth on each device.
+   Optional cloud sync merges all devices into one shared log.
+   ===================================================================== */
+
+const LS_KEY    = 'odo-state-v1';   // whole-state blob; bump suffix for migrations
+const SYNC_KEY  = 'odo-sync';       // {passphrase, lastSync}
+const THEME_KEY = 'odo-theme';      // 'light' | 'dark'  (absent = automatic)
+
+const $  = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const fmtMi = n => n.toLocaleString('en-US');
+const todayISO = () => new Date().toISOString().slice(0,10);
+const uid = () => (crypto.randomUUID ? crypto.randomUUID()
+                                     : 'r' + Date.now() + Math.random().toString(16).slice(2));
+const monthsBetween = (d1, d2) => (d2 - d1) / (1000*60*60*24*30.44);
+const daysBetween   = (d1, d2) => Math.round((d2 - d1) / (1000*60*60*24));
+
+/* Real clock now (the mockup pinned a demo date here). */
+const TODAY = new Date();
+
+/* ---------- SEED (first-run defaults, accurate as of 2026-06-09) ----------
+   Seed records use *deterministic* ids and timestamps so that if two fresh
+   devices seed independently and later sync, the merge dedupes them by id
+   instead of doubling the history. User-created records get random ids. */
+const SEED_TS = Date.parse('2026-06-09T00:00:00Z');
+function seedState(){
+  return {
+    version: 1,
+    rides: [
+      {id:'seed-r-2026-06-07', date:'2026-06-07', odo:825, trip:31, updatedAt:SEED_TS},
+      {id:'seed-r-2026-06-01', date:'2026-06-01', odo:794, trip:52, updatedAt:SEED_TS},
+      {id:'seed-r-2026-05-25', date:'2026-05-25', odo:742, trip:38, updatedAt:SEED_TS},
+      {id:'seed-r-2026-05-17', date:'2026-05-17', odo:704, trip:64, updatedAt:SEED_TS},
+      {id:'seed-r-2026-05-09', date:'2026-05-09', odo:640, trip:40, updatedAt:SEED_TS},
+    ],
+    services: [
+      {id:'seed-s-2026-04-02', date:'2026-04-02', odo:685, item:'600-mi service · Fremont Honda', updatedAt:SEED_TS},
+    ],
+    /* mode 'milestone': due at the next multiple of everyMi above lastOdo (Honda note *1).
+       mode 'rolling': due everyMi after lastOdo. Time intervals always run from lastDate. */
+    schedule: [
+      {item:'Chain clean & lube',      mode:'rolling',   everyMi:400,   everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'Engine oil',              mode:'milestone', everyMi:8000,  everyMo:12,   lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'Engine oil filter',       mode:'milestone', everyMi:16000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'4,000-mi check',          mode:'milestone', everyMi:4000,  everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'8,000-mi inspection',     mode:'milestone', everyMi:8000,  everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'Air cleaner',             mode:'milestone', everyMi:12000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'Spark plug & valves',     mode:'milestone', everyMi:16000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'Brake fluid (replace)',   mode:'rolling',   everyMi:null,  everyMo:24,   lastOdo:0,   lastDate:'2025-07-12', updatedAt:SEED_TS},
+      {item:'Coolant (replace)',       mode:'rolling',   everyMi:null,  everyMo:36,   lastOdo:0,   lastDate:'2025-07-12', updatedAt:SEED_TS},
+    ],
+    warnAtMi: 100,   // turns orange within this many miles of due
+    warnAtDays: 14,  // or within this many days
+    showAtMi: 200,   // appears on home screen within this many miles
+    showAtDays: 30,  // or within this many days
+    updatedAt: SEED_TS,
+  };
+}
+
+/* ---------- PERSISTENCE ---------- */
+let state = seedState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !Array.isArray(s.rides) || !Array.isArray(s.services) || !Array.isArray(s.schedule)) return null;
+    return s;
+  }catch{ return null; }
+}
+function persist(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+/* Every mutation funnels through here: stamp the doc, persist, and queue a sync. */
+function saveState(){
+  state.updatedAt = Date.now();
+  persist();
+  scheduleSync();
+}
+
+/* ---------- DERIVED HELPERS ---------- */
+const activeRides    = () => state.rides.filter(r => !r.deleted);
+const activeServices = () => state.services.filter(s => !s.deleted);
+/* Current odometer = highest reading we've logged. */
+function currentOdo(){ return activeRides().reduce((m,r) => Math.max(m, r.odo), 0); }
+
+/* Re-derive every ride's trip from its chronological predecessor.
+   The earliest ride has no predecessor in the log, so it keeps its stored
+   trip. Mutates the records in place (they're references into state.rides). */
+function recomputeTrips(){
+  const rs = activeRides().slice().sort((a,b) => a.date.localeCompare(b.date) || a.odo - b.odo);
+  for(let i = 1; i < rs.length; i++) rs[i].trip = rs[i].odo - rs[i-1].odo;
+}
+
+/* Status for each schedule item: returns {dueLabel, pct, warn, overdue, ...} */
+function svcStatus(s){
+  const odo = currentOdo();
+  let pctMi = null, miLeft = null;
+  if (s.everyMi){
+    let dueOdo;
+    if (s.mode === 'milestone'){
+      // next multiple of everyMi strictly above lastOdo (Honda manual note *1)
+      dueOdo = (Math.floor(s.lastOdo / s.everyMi) + 1) * s.everyMi;
+      const start = dueOdo - s.everyMi;
+      pctMi = Math.min(1, Math.max(0, (odo - start) / s.everyMi));
+    } else {
+      dueOdo = s.lastOdo + s.everyMi;
+      pctMi = Math.min(1, Math.max(0, (odo - s.lastOdo) / s.everyMi));
+    }
+    miLeft = dueOdo - odo;
+  }
+  let pctMo = null, daysLeft = null;
+  if (s.everyMo){
+    const last = new Date(s.lastDate);
+    const dueDate = new Date(last); dueDate.setMonth(dueDate.getMonth() + s.everyMo);
+    daysLeft = daysBetween(TODAY, dueDate);
+    pctMo = Math.min(1, Math.max(0, monthsBetween(last, TODAY) / s.everyMo));
+  }
+  const pct = Math.max(pctMi ?? 0, pctMo ?? 0);
+  const overdue = (miLeft !== null && miLeft < 0) || (daysLeft !== null && daysLeft < 0);
+  const warn = overdue ||
+    (miLeft !== null && miLeft <= state.warnAtMi) ||
+    (daysLeft !== null && daysLeft <= state.warnAtDays);
+  // whichever trigger comes first drives the label
+  let dueLabel;
+  if (overdue) dueLabel = 'Overdue';
+  else {
+    const parts = [];
+    if (miLeft !== null) parts.push(`${fmtMi(miLeft)} mi`);
+    if (daysLeft !== null) parts.push(`${daysLeft} days`);
+    dueLabel = 'in ' + parts.join(' or ');
+  }
+  return {dueLabel, pct, warn, overdue, miLeft, daysLeft};
+}
+
+/* ---------- RENDER ---------- */
+function render(){
+  $('#hdr-odo').textContent = fmtMi(currentOdo()) + ' mi';
+  // Don't stomp the odometer field while the rider is mid-edit (a background
+  // sync can call render() at any time).
+  if (document.activeElement !== odoIn) setOdoDisplay();
+  renderDueSummary();
+  renderService();
+  renderHistory();
+}
+
+function renderDueSummary(){
+  const all = state.schedule.map(s => ({s, st: svcStatus(s)}))
+    .sort((a,b) => b.st.pct - a.st.pct);
+  const onHorizon = ({st}) => st.overdue ||
+    (st.miLeft !== null && st.miLeft <= state.showAtMi) ||
+    (st.daysLeft !== null && st.daysLeft <= state.showAtDays);
+  // everything within the threshold, with a floor of three so the section never empties
+  const items = all.filter((x, i) => i < 3 || onHorizon(x));
+  $('#due-summary').innerHTML = items.map(({s,st}) => svcCard(s, st, false)).join('');
+  const anyWarn = state.schedule.some(s => svcStatus(s).warn);
+  $('#tab-service .dot').style.setProperty('--badge', anyWarn ? 'block' : 'none');
+}
+
+function svcCard(s, st, actionable){
+  const subL = s.everyMi ? `every ${fmtMi(s.everyMi)} mi` : '';
+  const subR = s.everyMo ? `every ${s.everyMo} mo` : '';
+  return `<div class="svc${actionable ? ' tappable' : ''}" data-item="${esc(s.item)}">
+    <div class="svc-top">
+      <span class="svc-name">${esc(s.item)}</span>
+      <span class="svc-due${st.warn ? ' warn' : ''}">${st.dueLabel}</span>
+    </div>
+    <div class="gauge"><i class="${st.warn ? 'warn' : ''}" style="width:${Math.round(st.pct*100)}%"></i></div>
+    <div class="svc-sub"><span>${subL}</span><span>${subR}</span></div>
+    ${actionable ? `<div class="svc-actions"><div class="row">
+        <button class="primary" data-done="${esc(s.item)}">Done today at ${fmtMi(currentOdo())} mi</button>
+      </div></div>` : ''}
+  </div>`;
+}
+
+function renderService(){
+  const sorted = [...state.schedule].map(s => ({s, st: svcStatus(s)}))
+    .sort((a,b) => b.st.pct - a.st.pct);
+  $('#svc-list').innerHTML = sorted.map(({s,st}) => svcCard(s, st, true)).join('');
+}
+
+function renderHistory(){
+  const all = [
+    ...activeRides().map(r => ({...r, kind:'ride'})),
+    ...activeServices().map(s => ({...s, kind:'service'})),
+  ].sort((a,b) => b.date.localeCompare(a.date) || b.odo - a.odo);
+
+  if (!all.length){
+    $('#history-list').innerHTML = `<div class="history-empty">No rides logged yet.</div>`;
+    return;
+  }
+
+  const byMonth = {};
+  for (const e of all){
+    const key = e.date.slice(0,7);
+    (byMonth[key] ??= []).push(e);
+  }
+  $('#history-list').innerHTML = Object.entries(byMonth).map(([key, entries]) => {
+    const total = entries.filter(e => e.kind==='ride').reduce((t,e) => t+e.trip, 0);
+    const label = new Date(key + '-15').toLocaleDateString('en-US', {month:'long', year:'numeric'});
+    return `<div class="month-block">
+      <div class="month-head">
+        <span class="eyebrow">${label}</span>
+        <span class="total">${fmtMi(total)} mi</span>
+      </div>
+      ${entries.map(e => e.kind === 'ride'
+        ? `<div class="ride" data-edit="ride" data-id="${esc(e.id)}">
+             <span class="d">${dateLabel(e.date)}
+               <small>odo ${fmtMi(e.odo)}</small></span>
+             <span class="trip">+${e.trip}<small>MI</small></span>
+           </div>`
+        : `<div class="ride service-row" data-edit="service" data-id="${esc(e.id)}">
+             <span class="d">${dateLabel(e.date)}
+               <small>service · odo ${fmtMi(e.odo)}</small></span>
+             <span class="trip">${esc(e.item)}</span>
+           </div>`
+      ).join('')}
+    </div>`;
+  }).join('');
+}
+
+const dateLabel = iso => new Date(iso+'T12:00').toLocaleDateString('en-US',{weekday:'short', month:'short', day:'numeric'});
+/* Escape any value that lands in innerHTML (item names, ids). */
+function esc(v){ return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- LOG: odometer entry ---------- */
+const odoIn = $('#odo-in'), saveBtn = $('#save-ride'),
+      tripLine = $('#trip-line'), tripVal = $('#trip-val');
+
+function setOdoDisplay(){
+  odoIn.value = currentOdo();
+  tripLine.classList.remove('show');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Log ride';
+}
+
+/* Tap the odometer, type the new reading over the selected value */
+odoIn.addEventListener('focus', () => odoIn.select());
+
+odoIn.addEventListener('input', () => {
+  const v = parseInt(odoIn.value, 10);
+  if (!odoIn.value || isNaN(v) || v === currentOdo()){
+    tripLine.classList.remove('show'); saveBtn.disabled = true;
+    saveBtn.textContent = 'Log ride'; return;
+  }
+  const trip = v - currentOdo();
+  tripLine.classList.add('show');
+  if (trip < 0){
+    tripVal.textContent = 'below current reading';
+    tripVal.className = 'val neg'; saveBtn.disabled = true;
+    saveBtn.textContent = 'Log ride';
+  } else {
+    tripVal.textContent = '+' + fmtMi(trip) + ' mi';
+    tripVal.className = 'val'; saveBtn.disabled = false;
+    saveBtn.textContent = `Log ride · +${fmtMi(trip)} mi`;
+  }
+});
+
+/* Abandoned or invalid edit: settle back to the actual odometer.
+   Blur fires before the save click; reverting only when the button is
+   disabled means a valid save is never swallowed. Preserve this ordering. */
+odoIn.addEventListener('blur', () => {
+  if (saveBtn.disabled) setOdoDisplay();
+});
+
+saveBtn.addEventListener('click', () => {
+  const v = parseInt(odoIn.value, 10);
+  const trip = v - currentOdo();
+  state.rides.unshift({id: uid(), date: todayISO(), odo: v, trip, updatedAt: Date.now()});
+  saveState();
+  $('#flash').textContent = `Ride saved · +${fmtMi(trip)} mi`;
+  $('#flash').classList.add('show');
+  setTimeout(() => $('#flash').classList.remove('show'), 1600);
+  render();
+});
+
+/* ---------- TABS ---------- */
+$$('.tab').forEach(t => t.addEventListener('click', () => {
+  $$('.tab').forEach(x => x.classList.remove('active'));
+  $$('.screen').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  $('#screen-' + t.dataset.screen).classList.add('active');
+}));
+
+/* ---------- SERVICE: tap to expand, "Done" resets the interval ---------- */
+$('#svc-list').addEventListener('click', e => {
+  const done = e.target.closest('[data-done]');
+  if (done){
+    const item = done.dataset.done;
+    const s = state.schedule.find(x => x.item === item);
+    s.lastOdo = currentOdo();
+    s.lastDate = todayISO();
+    s.updatedAt = Date.now();
+    state.services.unshift({id: uid(), date: s.lastDate, odo: s.lastOdo, item, updatedAt: Date.now()});
+    saveState();
+    render();
+    return;
+  }
+  const card = e.target.closest('.svc.tappable');
+  if (card) card.classList.toggle('open');
+});
+
+/* ---------- HISTORY: tap a row to edit date/odo or delete ---------- */
+let editing = null; // {kind, id}
+$('#history-list').addEventListener('click', e => {
+  const row = e.target.closest('[data-edit]');
+  if (!row) return;
+  openEdit(row.dataset.edit, row.dataset.id);
+});
+
+function recordFor(kind, id){
+  return (kind === 'ride' ? state.rides : state.services).find(r => r.id === id);
+}
+function openEdit(kind, id){
+  const rec = recordFor(kind, id);
+  if (!rec) return;
+  editing = {kind, id};
+  $('#edit-title').textContent = kind === 'ride' ? 'Edit ride' : 'Edit service';
+  $('#edit-date').value = rec.date;
+  $('#edit-odo').value = rec.odo;
+  $('#edit-status').textContent = '';
+  showOverlay('#edit-overlay');
+}
+$('#edit-save').addEventListener('click', () => {
+  const rec = recordFor(editing.kind, editing.id);
+  if (!rec) return;
+  const odo = parseInt($('#edit-odo').value, 10);
+  const date = $('#edit-date').value;
+  if (!date || isNaN(odo) || odo < 0){
+    $('#edit-status').textContent = 'Enter a valid date and odometer.';
+    return;
+  }
+  rec.date = date;
+  rec.odo = odo;
+  rec.updatedAt = Date.now();
+  if (editing.kind === 'ride') recomputeTrips();
+  saveState();
+  render();
+  hideOverlay('#edit-overlay');
+});
+$('#edit-delete').addEventListener('click', () => {
+  const rec = recordFor(editing.kind, editing.id);
+  if (!rec) return;
+  // Tombstone (not a hard delete) so the deletion propagates through sync.
+  rec.deleted = true;
+  rec.updatedAt = Date.now();
+  if (editing.kind === 'ride') recomputeTrips();
+  saveState();
+  render();
+  hideOverlay('#edit-overlay');
+});
+
+/* ---------- OVERLAYS (shared show/hide) ---------- */
+function showOverlay(sel){ $(sel).classList.add('show'); }
+function hideOverlay(sel){ $(sel).classList.remove('show'); }
+// Tap the dim backdrop (but not the sheet) to close.
+$$('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); }));
+$('[data-close-settings]').addEventListener('click', () => hideOverlay('#settings-overlay'));
+$('[data-close-edit]').addEventListener('click', () => hideOverlay('#edit-overlay'));
+$('#settings-btn').addEventListener('click', () => { refreshSyncUI(); showOverlay('#settings-overlay'); });
+
+/* ---------- BACKUP: export / import ---------- */
+$('#export-btn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `odo-backup-${todayISO()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+$('#import-btn').addEventListener('click', () => $('#import-file').click());
+$('#import-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const s = JSON.parse(reader.result);
+      if (!Array.isArray(s.rides) || !Array.isArray(s.services) || !Array.isArray(s.schedule))
+        throw new Error('shape');
+      state = s;
+      state.updatedAt = Date.now();
+      persist();
+      render();
+      scheduleSync();
+      hideOverlay('#settings-overlay');
+    }catch{
+      alert('That file is not a valid Odo backup.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = ''; // allow re-importing the same filename
+});
+
+/* ---------- CLOUD SYNC ----------
+   The passphrase is both the identity and the key: the server stores each
+   passphrase's data under a hash of it, so entering the same phrase on two
+   devices points them at the same shared blob. Merge is last-writer-wins per
+   record (by updatedAt); deletions ride along as tombstones. */
+function syncCfg(){ try{ return JSON.parse(localStorage.getItem(SYNC_KEY)) || null; }catch{ return null; } }
+function syncConfigured(){ const c = syncCfg(); return !!(c && c.passphrase); }
+
+function mergeById(x = [], y = [], key = 'id'){
+  const m = new Map();
+  for (const r of [...x, ...y]){
+    const cur = m.get(r[key]);
+    if (!cur || (r.updatedAt || 0) >= (cur.updatedAt || 0)) m.set(r[key], r);
+  }
+  return [...m.values()];
+}
+function mergeStates(a, b){
+  // Doc-level fields (thresholds) come from whichever side was touched last.
+  const base = (a.updatedAt || 0) >= (b.updatedAt || 0) ? a : b;
+  const out = structuredClone(base);
+  out.rides    = mergeById(a.rides,    b.rides,    'id');
+  out.services = mergeById(a.services, b.services, 'id');
+  out.schedule = mergeById(a.schedule, b.schedule, 'item');
+  out.updatedAt = Math.max(a.updatedAt || 0, b.updatedAt || 0);
+  return out;
+}
+
+let syncing = false, syncTimer = null;
+function scheduleSync(){
+  if (!syncConfigured()) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncNow, 1200); // debounce bursts of edits
+}
+
+async function syncNow(){
+  if (!syncConfigured() || syncing) return;
+  syncing = true;
+  setSyncStatus('Syncing…', '');
+  try{
+    const c = syncCfg();
+    const headers = {'X-Odo-Key': c.passphrase};
+    // 1. Pull remote
+    const res = await fetch('/api/state', {headers});
+    if (!res.ok) throw new Error('pull ' + res.status);
+    const remoteText = await res.text();
+    let remote = null;
+    try{ const r = JSON.parse(remoteText); if (r && Array.isArray(r.rides)) remote = r; }catch{}
+    // 2. Merge into local
+    if (remote) state = mergeStates(state, remote);
+    persist();
+    render();
+    // 3. Push if we changed anything (or remote was empty)
+    const localText = JSON.stringify(state);
+    if (localText !== remoteText){
+      const put = await fetch('/api/state', {
+        method:'PUT', headers:{...headers, 'content-type':'application/json'}, body: localText,
+      });
+      if (!put.ok) throw new Error('push ' + put.status);
+    }
+    localStorage.setItem(SYNC_KEY, JSON.stringify({...c, lastSync: Date.now()}));
+    setSyncStatus('Synced · ' + new Date().toLocaleTimeString(), 'ok');
+  }catch(err){
+    setSyncStatus('Offline or sync error (' + err.message + '). Saved locally.', 'err');
+  }finally{
+    syncing = false;
+  }
+}
+
+function setSyncStatus(msg, kind){
+  const el = $('#sync-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'status' + (kind ? ' ' + kind : '');
+}
+function refreshSyncUI(){
+  const c = syncCfg();
+  $('#sync-pass').value = c?.passphrase || '';
+  $('#sync-disconnect').style.display = syncConfigured() ? 'block' : 'none';
+  if (syncConfigured() && c.lastSync)
+    setSyncStatus('Last synced · ' + new Date(c.lastSync).toLocaleString(), 'ok');
+  else if (syncConfigured())
+    setSyncStatus('Connected. Not synced yet.', '');
+  else
+    setSyncStatus('Not connected — data stays on this device.', '');
+}
+$('#sync-connect').addEventListener('click', () => {
+  const pass = $('#sync-pass').value.trim();
+  if (!pass){ setSyncStatus('Enter a passphrase first.', 'err'); return; }
+  localStorage.setItem(SYNC_KEY, JSON.stringify({passphrase: pass}));
+  refreshSyncUI();
+  syncNow();
+});
+$('#sync-now').addEventListener('click', syncNow);
+$('#sync-disconnect').addEventListener('click', () => {
+  localStorage.removeItem(SYNC_KEY);
+  $('#sync-pass').value = '';
+  refreshSyncUI();
+});
+
+// Opportunistic syncs: returning to the app, or regaining the network.
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
+window.addEventListener('online', syncNow);
+
+/* ---------- THEME ----------
+   Automatic: follows the system day/night setting and tracks changes live.
+   The toggle sets a manual override, persisted to localStorage. Absent key
+   means automatic. */
+const mqLight = matchMedia('(prefers-color-scheme: light)');
+let themeOverride = localStorage.getItem(THEME_KEY); // 'light' | 'dark' | null
+function applyTheme(){
+  const light = themeOverride ? themeOverride === 'light' : mqLight.matches;
+  document.documentElement.classList.toggle('light', light);
+  $('#theme-toggle').textContent = light ? '☾' : '☀︎';
+  $('#theme-color-meta').setAttribute('content', light ? '#F6F8FA' : '#141B23');
+}
+mqLight.addEventListener('change', applyTheme); // only bites when no override
+$('#theme-toggle').addEventListener('click', () => {
+  const light = document.documentElement.classList.contains('light');
+  themeOverride = light ? 'dark' : 'light';
+  localStorage.setItem(THEME_KEY, themeOverride);
+  applyTheme();
+});
+
+/* ---------- SERVICE WORKER ---------- */
+function registerSW(){
+  if ('serviceWorker' in navigator)
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
+/* ---------- BOOT ---------- */
+function boot(){
+  const saved = loadState();
+  if (saved){ state = saved; }
+  else { state = seedState(); persist(); }
+  applyTheme();
+  render();
+  if (syncConfigured()) syncNow();
+  registerSW();
+}
+boot();
+</script>
+</body>
+</html>

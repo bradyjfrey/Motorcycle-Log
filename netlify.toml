@@ -1,0 +1,8 @@
+# Static site + one serverless function for cloud sync. No build step for the
+# page itself; Netlify installs the function's deps and bundles it.
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"

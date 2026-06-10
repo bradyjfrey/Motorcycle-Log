@@ -1,0 +1,14 @@
+# Icons are content-addressed by name and effectively immutable.
+/icons/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The shell should revalidate so deploys land; the service worker handles
+# fast offline loads.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+/manifest.webmanifest
+  Cache-Control: public, max-age=86400
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/
+  Cache-Control: public, max-age=0, must-revalidate
