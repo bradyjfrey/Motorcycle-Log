@@ -3,13 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-<title>Motorcycle Log</title>
+<title>Brady's Motorcycle Log</title>
 
 <!-- PWA -->
 <link rel="manifest" href="/manifest.webmanifest">
-
-<!-- Google Identity Services: renders the sign-in button for cloud sync -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- Single JS-managed theme-color so the status bar follows a manual theme
      override too (a media-only <meta> can't react to the in-app toggle). -->
 <meta name="theme-color" id="theme-color-meta" content="#141B23">
@@ -235,8 +232,15 @@
   }
   #gate.show{display:flex;}
   .gate-card{display:flex; flex-direction:column; align-items:center; gap:14px;}
-  .gate-title{font-family:'Barlow Condensed',sans-serif; font-size:2rem; letter-spacing:.08em; text-transform:uppercase;}
-  .gate-sub{color:var(--dim); max-width:32ch; line-height:1.45;}
+  .gate-title{font-family:'Barlow Condensed',sans-serif; font-size:2.2rem; line-height:1.1; letter-spacing:.08em; text-transform:uppercase;}
+  .gate-owner{display:block; font-size:1rem; font-weight:600; letter-spacing:.3em; color:var(--dim); margin-bottom:4px;}
+  .gate-btn{
+    display:inline-flex; align-items:center; gap:9px; margin-top:6px;
+    background:var(--blue); color:var(--btn-text); text-decoration:none;
+    font-family:'Barlow',sans-serif; font-weight:600; font-size:.92rem;
+    padding:12px 22px; border-radius:999px;
+  }
+  .gate-btn:active{opacity:.85;}
 </style>
 </head>
 <body>
@@ -331,9 +335,11 @@
      copy as if it were the shared log. -->
 <div id="gate" class="show">
   <div class="gate-card">
-    <div class="gate-title">Motorcycle Log</div>
-    <div class="gate-sub">Sign in to see your rides and service history.</div>
-    <div id="gsi-gate-button"></div>
+    <div class="gate-title"><span class="gate-owner">Brady's</span>Motorcycle Log</div>
+    <a class="gate-btn" id="gate-signin" href="/api/auth/google">
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.35 11.1H12v3.8h5.35c-.23 1.4-1.66 4.1-5.35 4.1-3.22 0-5.85-2.66-5.85-5.95s2.63-5.95 5.85-5.95c1.83 0 3.06.78 3.76 1.45l2.57-2.47C16.74 4.6 14.6 3.6 12 3.6 6.92 3.6 2.8 7.7 2.8 12.85s4.12 9.25 9.2 9.25c5.31 0 8.83-3.73 8.83-8.98 0-.6-.07-1.06-.18-1.52z"/></svg>
+      Sign in with Google
+    </a>
     <div class="status" id="gate-status"></div>
   </div>
 </div>
@@ -733,35 +739,41 @@ $('[data-close-edit]').addEventListener('click', () => hideOverlay('#edit-overla
 $('#settings-btn').addEventListener('click', () => { refreshSyncUI(); showOverlay('#settings-overlay'); });
 
 /* ---------- CLOUD SYNC ----------
-   Identity is a Google account. The sign-in button yields a Google ID token;
-   /api/auth/google verifies it and answers with a signed httpOnly session
+   Identity is a Google account via the OAuth redirect flow: the gate's
+   sign-in link leaves for /api/auth/google, Google bounces back through
+   /api/auth/callback, and the server answers with a signed httpOnly session
    cookie that every later sync renews (30-day rolling expiry), so sign-in is
    a roughly once-a-month event per device, not a per-session one. The server
    keys the shared blob by account email. Merge is last-writer-wins per record
    (by updatedAt); deletions ride along as tombstones. */
-const GOOGLE_CLIENT_ID = '694449188997-karfjnpcsjp1oph29fblho5bqt8kncvu.apps.googleusercontent.com';
-
 function syncCfg(){ try{ return JSON.parse(localStorage.getItem(SYNC_KEY)) || null; }catch{ return null; } }
 function syncConfigured(){ const c = syncCfg(); return !!(c && c.email); }
 
-/* The GIS script loads async; retry until it lands, then render the button.
-   An explicit width avoids a zero-width iframe when the button is first
-   rendered inside the hidden settings sheet. */
-let gsiReady = false;
-function initGsi(tries = 0){
-  if (gsiReady) return;
-  if (!window.google?.accounts?.id){
-    if (tries < 60) setTimeout(() => initGsi(tries + 1), 250);
-    return;
+/* Server-issued failure codes from the OAuth round trip (?autherror=...). */
+const AUTH_ERRORS = {
+  not_allowed: 'That Google account is not allowed on this log.',
+  access_denied: 'You declined the Google sign-in. Try again if that was a mistake.',
+  state_mismatch: 'Sign-in security check failed. The page may have sat too long; try again.',
+  token_exchange_failed: "Couldn't complete sign-in with Google. Try again.",
+  no_id_token: 'Google did not return an identity token. Try again.',
+  invalid_id_token: 'Could not read the identity token. Try again.',
+  email_not_verified: 'That Google account email is not verified with Google.',
+};
+
+/* After the OAuth redirect lands back on '/', the session cookie is the only
+   evidence of sign-in; ask the server who we are. Also recovers a device
+   whose localStorage was cleared but whose cookie survived. */
+async function probeSession(){
+  try{
+    const res = await fetch('/api/auth/me');
+    if (!res.ok) return; // stay gated
+    const { email } = await res.json();
+    localStorage.setItem(SYNC_KEY, JSON.stringify({...(syncCfg() || {}), email, needsAuth: false}));
+    refreshSyncUI();
+    syncNow();
+  }catch{
+    setGateStatus("Can't reach the server. Check your connection and reload.", 'err');
   }
-  gsiReady = true;
-  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential });
-  renderGsiButton();
-}
-function renderGsiButton(){
-  const host = $('#gsi-gate-button');
-  if (!gsiReady || !host || host.childElementCount) return;
-  google.accounts.id.renderButton(host, { theme:'filled_blue', size:'large', shape:'pill', text:'signin_with', width: 230 });
 }
 
 /* ---------- GATE ----------
@@ -778,31 +790,12 @@ function refreshGate(){
   const c = syncCfg();
   const signedIn = syncConfigured() && !c.needsAuth;
   $('#gate').classList.toggle('show', !appUnlocked);
-  $('#gsi-gate-button').style.display = signedIn ? 'none' : '';
+  $('#gate-signin').style.display = signedIn ? 'none' : '';
   if (!navigator.onLine)   setGateStatus('Offline. Connect to the internet to sign in.', 'err');
   else if (c?.needsAuth)   setGateStatus('Session expired. Sign in again.', 'err');
   else if (signedIn)       setGateStatus('Connecting…', '');
-  else                     setGateStatus('', '');
-  renderGsiButton();
-}
-
-async function onGoogleCredential(resp){
-  setGateStatus('Signing in…', '');
-  try{
-    const res = await fetch('/api/auth/google', {
-      method:'POST', headers:{'content-type':'application/json'},
-      body: JSON.stringify({credential: resp.credential}),
-    });
-    if (res.status === 403){ setGateStatus('That Google account is not allowed on this log.', 'err'); return; }
-    if (!res.ok) throw new Error('auth ' + res.status);
-    const { email } = await res.json();
-    const prev = syncCfg() || {};
-    localStorage.setItem(SYNC_KEY, JSON.stringify({email, lastSync: prev.lastSync}));
-    refreshSyncUI();
-    syncNow();
-  }catch(err){
-    setGateStatus('Sign-in failed (' + err.message + ').', 'err');
-  }
+  // Signed out with no special condition: leave the status alone so an
+  // ?autherror message from the redirect survives this refresh.
 }
 
 /* A 401 means the session lapsed (or the cookie was cleared). Re-gate the
@@ -901,7 +894,6 @@ function refreshSyncUI(){
 $('#sync-now').addEventListener('click', syncNow);
 $('#sync-disconnect').addEventListener('click', async () => {
   try{ await fetch('/api/auth/logout', {method:'POST'}); }catch{}
-  try{ window.google?.accounts?.id.disableAutoSelect(); }catch{}
   // A signed-out device keeps no copy of the log.
   localStorage.removeItem(SYNC_KEY);
   localStorage.removeItem(LS_KEY);
@@ -909,6 +901,7 @@ $('#sync-disconnect').addEventListener('click', async () => {
   appUnlocked = false;
   render();
   hideOverlay('#settings-overlay');
+  setGateStatus('', '');
   refreshSyncUI();
 });
 
@@ -916,8 +909,14 @@ $('#sync-disconnect').addEventListener('click', async () => {
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
 window.addEventListener('online', syncNow);
 window.addEventListener('offline', refreshGate);
-// Live sync: changes made on another device appear without interaction.
-setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 30_000);
+// Live sync: changes made on another device appear without interaction. For
+// a gated-but-cookied page (e.g. opened before the cookie landed elsewhere),
+// the same tick re-probes the session instead.
+setInterval(() => {
+  if (document.visibilityState !== 'visible') return;
+  if (syncConfigured() && !syncCfg().needsAuth) syncNow();
+  else if (!syncConfigured()) probeSession();
+}, 30_000);
 
 /* ---------- THEME ----------
    Automatic: follows the system day/night setting and tracks changes live.
@@ -950,9 +949,15 @@ function boot(){
   state = loadState() || emptyState();
   applyTheme();
   render();
-  initGsi();
   refreshSyncUI();              // gate stays up until the first sync succeeds
-  if (syncConfigured()) syncNow();
+  const autherror = new URLSearchParams(location.search).get('autherror');
+  if (autherror){
+    setGateStatus(AUTH_ERRORS[autherror] || 'Sign-in failed (' + autherror + ').', 'err');
+    history.replaceState(null, '', '/');
+  }
+  const c = syncCfg();
+  if (c?.email && !c.needsAuth) syncNow();
+  else probeSession();          // fresh load or post-redirect: the cookie decides
   registerSW();
 }
 boot();

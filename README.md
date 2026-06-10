@@ -44,19 +44,22 @@ applied once, on the account's very first sync.
 4. Set environment variables (Site configuration → Environment variables):
    - `SESSION_SECRET` (required): random string that signs session cookies;
      generate with `openssl rand -hex 32`. Rotating it signs everyone out.
+   - `GOOGLE_CLIENT_SECRET` (required): the OAuth client's secret from Google
+     Cloud Console; the callback uses it to exchange the sign-in code.
    - `ALLOWED_EMAILS` (optional): comma-separated Google accounts allowed to
      sync. Defaults to the owner's address hardcoded in `auth.mjs`.
-5. The Google OAuth client ID lives in `index.html` and `auth.mjs` (it is
-   public by design). Its Cloud Console entry must list the site's origins
-   under Authorized JavaScript origins.
+5. The Google OAuth client ID lives in `auth.mjs` (it is public by design).
+   Its Cloud Console entry must list each origin's callback under Authorized
+   redirect URIs, e.g. `https://motorcycle.bradyjfrey.com/api/auth/callback`.
 
 ## Status / next steps
 
 Cloud sync is keyed to a Google account (added 2026-06, replacing the original
-passphrase model). Sign-in uses Google Identity Services in the page; the
-`auth` function verifies the ID token and issues its own 30-day rolling
-session cookie, so logins are rare. The sync layer remains isolated (two
-functions + the cloud-sync block in `index.html`).
+passphrase model). Sign-in is an OAuth redirect flow with the app's own
+designed button (no Google iframe widget); the `auth` function exchanges the
+code, checks the allowlist, and issues its own 30-day rolling session cookie,
+so logins are rare. The sync layer remains isolated (two functions + the
+cloud-sync block in `index.html`).
 
 ## Out of scope
 
