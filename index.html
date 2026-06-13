@@ -188,7 +188,7 @@ const SKIN_KEY  = 'odo-skin';       // 'gauge' | 'editorial' | 'roadster'
 const $  = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const fmtMi = n => n.toLocaleString('en-US');
-const todayISO = () => new Date().toISOString().slice(0,10);
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const uid = () => (crypto.randomUUID ? crypto.randomUUID()
                                      : 'r' + Date.now() + Math.random().toString(16).slice(2));
 const monthsBetween = (d1, d2) => (d2 - d1) / (1000*60*60*24*30.44);
@@ -375,7 +375,7 @@ function svcStatus(s){
   }
   let pctMo = null, daysLeft = null;
   if (s.everyMo){
-    const last = new Date(s.lastDate);
+    const last = new Date(s.lastDate + 'T12:00');
     const dueDate = new Date(last); dueDate.setMonth(dueDate.getMonth() + s.everyMo);
     daysLeft = daysBetween(TODAY, dueDate);
     pctMo = Math.min(1, Math.max(0, monthsBetween(last, TODAY) / s.everyMo));
