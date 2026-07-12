@@ -95,7 +95,8 @@
         <label for="tire-mfg">Manufacture date (DOT)</label>
         <input id="tire-mfg" type="date">
       </div>
-      <div class="hint">From the DOT week/year code on the sidewall. The 4-year replacement clock counts from this date; update it when you fit new tires.</div>
+      <div class="hint">From the DOT week/year code on the sidewall. The 4-year replacement clock counts from this date. New tires are logged from the Service tab; this field is for corrections.</div>
+      <div class="status err" id="tire-mfg-status"></div>
     </section>
     <section class="set-group">
       <span class="eyebrow">Appearance</span>
@@ -177,6 +178,27 @@
       <button class="btn danger" id="edit-delete">Delete</button>
     </div>
     <div class="status err" id="edit-status"></div>
+  </div>
+</div>
+
+<!-- ---------- NEW TIRES SHEET ----------
+     Replacing tires resets the age clock from the DOT manufacture date, not
+     the install date, so the plain "Done" flow doesn't apply here. -->
+<div class="overlay" id="tire-overlay">
+  <div class="sheet" role="dialog" aria-label="Add new tires">
+    <div class="sheet-head">
+      <span class="title">Add new tires</span>
+      <button class="sheet-close" data-close-tire aria-label="Close">✕</button>
+    </div>
+    <div class="field">
+      <label for="tire-new-date">Manufacture date (DOT)</label>
+      <input id="tire-new-date" type="date">
+    </div>
+    <div class="hint">From the DOT week/year code on the new tires' sidewall. The 4-year clock runs from this date, not the install date.</div>
+    <div class="row" style="margin-top:14px;">
+      <button class="btn primary" id="tire-new-save">Save</button>
+    </div>
+    <div class="status err" id="tire-new-status"></div>
   </div>
 </div>
 
@@ -456,6 +478,7 @@ function render(){
   renderService();
   renderHistory();
   refreshTireUI();
+  auditScheduleNames();
 }
 
 /* ---------- SETTINGS: TIRE MANUFACTURE DATE ----------
@@ -468,16 +491,49 @@ function refreshTireUI(){
   if (document.activeElement === input) return; // mid-edit; don't stomp
   const t = state.schedule.find(x => x.item === TIRE_ITEM);
   input.value = t ? t.lastDate : '';
+  input.max = todayISO(); // tires aren't made in the future
   input.disabled = !t;
+  $('#tire-mfg-status').textContent = t && t.lastDate ? '' : 'Missing tire manufacture date.';
 }
 $('#tire-mfg').addEventListener('change', () => {
   const t = state.schedule.find(x => x.item === TIRE_ITEM);
   const v = $('#tire-mfg').value;
-  if (!t || !v){ refreshTireUI(); return; } // cleared or no record: revert
+  // cleared, no record, or a future date (typed past the max): revert
+  if (!t || !v || v > todayISO()){ refreshTireUI(); return; }
   t.lastDate = v;
   t.updatedAt = Date.now();
   saveState();
   render();
+});
+
+/* Replacing tires goes through this sheet instead of the generic Done flow:
+   it logs the swap to history at today's odometer, but starts the age clock
+   from the new tires' DOT manufacture date. */
+function openTireSheet(){
+  const input = $('#tire-new-date');
+  input.value = ''; // deliberately blank: the DOT date must be read off the tire
+  input.max = todayISO();
+  $('#tire-new-status').textContent = '';
+  showOverlay('#tire-overlay');
+}
+$('#tire-new-save').addEventListener('click', () => {
+  const v = $('#tire-new-date').value;
+  if (!v || v > todayISO()){
+    $('#tire-new-status').textContent = 'Enter the DOT date; it can’t be in the future.';
+    return;
+  }
+  const t = state.schedule.find(x => x.item === TIRE_ITEM);
+  if (!t){
+    $('#tire-new-status').textContent = 'No tire record found; see Settings.';
+    return;
+  }
+  t.lastOdo = currentOdo();
+  t.lastDate = v;
+  t.updatedAt = Date.now();
+  state.services.unshift({id: uid(), date: todayISO(), odo: currentOdo(), item: TIRE_ITEM, updatedAt: Date.now()});
+  saveState();
+  render();
+  hideOverlay('#tire-overlay');
 });
 
 function renderDueSummary(){
@@ -546,10 +602,20 @@ const SVC_DETAILS = {
   ],
   'Tires (replace)': [
     {t:'Replace both tires regardless of tread; age limit from the DOT date', star:2},
-    {t:'Update the tire manufacture date in Settings after fitting'},
+    {t:'Enter the new DOT manufacture date when logging the swap'},
   ],
 };
 const PILL_LABELS = {1:'Maybe dealer', 2:'Should be dealer'};
+
+/* The reference maps above key on exact item names. If a schedule item is
+   ever renamed without updating them, its checklist and milestone anchoring
+   silently detach, so every render cross-checks and complains in the console. */
+function auditScheduleNames(){
+  if (!state.schedule.length) return; // pre-sync blank state
+  const names = new Set(activeSchedule().map(s => s.item));
+  for (const k of new Set([...MILESTONE_ITEMS, ...Object.keys(SVC_DETAILS)]))
+    if (!names.has(k)) console.warn('Reference entry matches no schedule item:', k);
+}
 
 function svcTaskList(item){
   const tasks = SVC_DETAILS[item];
@@ -570,7 +636,7 @@ function svcCard(s, st, actionable){
     <div class="gauge"><i class="${st.warn ? 'warn' : ''}" style="width:${Math.round(st.pct*100)}%"></i></div>
     <div class="svc-sub"><span>${subL}</span><span>${subR}</span></div>
     ${actionable ? `${svcTaskList(s.item)}<div class="svc-actions"><div class="row">
-        <button class="primary" data-done="${esc(s.item)}">Done today at ${fmtMi(currentOdo())} miles</button>
+        <button class="primary" data-done="${esc(s.item)}">${s.item === TIRE_ITEM ? 'Add new tires' : `Done today at ${fmtMi(currentOdo())} miles`}</button>
       </div></div>` : ''}
   </div>`;
 }
@@ -692,6 +758,7 @@ $('#svc-list').addEventListener('click', e => {
   const done = e.target.closest('[data-done]');
   if (done){
     const item = done.dataset.done;
+    if (item === TIRE_ITEM){ openTireSheet(); return; } // needs the DOT date
     const s = state.schedule.find(x => x.item === item);
     s.lastOdo = currentOdo();
     s.lastDate = todayISO();
@@ -796,6 +863,7 @@ function hideOverlay(sel){ $(sel).classList.remove('show'); }
 // Tap the dim backdrop (but not the sheet) to close.
 $$('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); }));
 $('[data-close-edit]').addEventListener('click', () => hideOverlay('#edit-overlay'));
+$('[data-close-tire]').addEventListener('click', () => hideOverlay('#tire-overlay'));
 
 /* ---------- CLOUD SYNC ----------
    Identity is a Google account via the OAuth redirect flow: the gate's
