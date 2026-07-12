@@ -90,6 +90,14 @@
       <div class="hint">Download your full log as a dated JSON file.</div>
     </section>
     <section class="set-group">
+      <span class="eyebrow">Tires</span>
+      <div class="field">
+        <label for="tire-mfg">Manufacture date (DOT)</label>
+        <input id="tire-mfg" type="date">
+      </div>
+      <div class="hint">From the DOT week/year code on the sidewall. The 4-year replacement clock counts from this date; update it when you fit new tires.</div>
+    </section>
+    <section class="set-group">
       <span class="eyebrow">Appearance</span>
       <div class="mode-picker" id="mode-picker">
         <button data-mode="auto" aria-pressed="true">Auto</button>
@@ -297,15 +305,17 @@ function seedState(){
     /* mode 'milestone': due at the next multiple of everyMi above lastOdo (Honda note *1).
        mode 'rolling': due everyMi after lastOdo. Time intervals always run from lastDate. */
     schedule: [
-      {item:'Chain clean & lube',      mode:'rolling',   everyMi:400,   everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'Chain clean & lube',      mode:'rolling',   everyMi:600,   everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
       {item:'Engine oil',              mode:'milestone', everyMi:8000,  everyMo:12,   lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
       {item:'Engine oil filter',       mode:'milestone', everyMi:16000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
       {item:'4,000-mi check',          mode:'milestone', everyMi:4000,  everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
       {item:'8,000-mi inspection',     mode:'milestone', everyMi:8000,  everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
       {item:'Air cleaner',             mode:'milestone', everyMi:12000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
-      {item:'Spark plug & valves',     mode:'milestone', everyMi:16000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'16,000-mi service',       mode:'milestone', everyMi:16000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
       {item:'Brake fluid (replace)',   mode:'rolling',   everyMi:null,  everyMo:24,   lastOdo:0,   lastDate:'2025-07-12', updatedAt:SEED_TS},
       {item:'Coolant (replace)',       mode:'rolling',   everyMi:null,  everyMo:36,   lastOdo:0,   lastDate:'2025-07-12', updatedAt:SEED_TS},
+      /* Tire age runs from DOT manufacture date (week 8 of 2025), not purchase. */
+      {item:'Tires (replace)',         mode:'rolling',   everyMi:null,  everyMo:48,   lastOdo:0,   lastDate:'2025-02-17', updatedAt:SEED_TS},
     ],
     warnAtMi: 100,   // turns orange within this many miles of due
     warnAtDays: 14,  // or within this many days
@@ -335,6 +345,34 @@ function loadState(){
 }
 function persist(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 
+/* Corrections to already-synced data. Each is guarded by the old value, so it
+   runs once and leaves lastOdo/lastDate (and the service history) alone. */
+function migrateState(s){
+  // Honda manual: drive chain is every 600 mi, not the 400 originally seeded.
+  const chain = s.schedule.find(x => x.item === 'Chain clean & lube' && x.everyMi === 400);
+  if (chain){ chain.everyMi = 600; chain.updatedAt = Date.now(); }
+  // CA safety course: replace tires on age (4 years), regardless of tread.
+  // Clock starts at the DOT manufacture date (week 8 of 2025), not purchase.
+  // Only added to a real account's schedule, never to the blank pre-sync state.
+  if (s.schedule.length && !s.schedule.some(x => x.item === 'Tires (replace)')){
+    s.schedule.push({item:'Tires (replace)', mode:'rolling', everyMi:null, everyMo:48, lastOdo:0, lastDate:'2025-02-17', updatedAt: Date.now()});
+  }
+  // The 16k-only emission checks (secondary air, evap) belong with the spark
+  // plug service, so that item becomes the full 16,000-mi service. Renaming a
+  // schedule record means retiring the old name with a tombstone: renders skip
+  // it, and the merge keeps it so a stale device can't resurrect the name.
+  const sp = s.schedule.find(x => x.item === 'Spark plug & valves' && !x.deleted);
+  if (sp){
+    if (!s.schedule.some(x => x.item === '16,000-mi service')){
+      s.schedule.push({item:'16,000-mi service', mode:sp.mode, everyMi:sp.everyMi,
+        everyMo:sp.everyMo, lastOdo:sp.lastOdo, lastDate:sp.lastDate, updatedAt: Date.now()});
+    }
+    sp.deleted = true;
+    sp.updatedAt = Date.now();
+  }
+  return s;
+}
+
 /* Every mutation funnels through here: stamp the doc, persist, and queue a sync. */
 function saveState(){
   state.updatedAt = Date.now();
@@ -345,6 +383,7 @@ function saveState(){
 /* ---------- DERIVED HELPERS ---------- */
 const activeRides    = () => state.rides.filter(r => !r.deleted);
 const activeServices = () => state.services.filter(s => !s.deleted);
+const activeSchedule = () => state.schedule.filter(s => !s.deleted);
 /* Current odometer = highest reading we've logged. */
 function currentOdo(){ return activeRides().reduce((m,r) => Math.max(m, r.odo), 0); }
 
@@ -405,10 +444,33 @@ function render(){
   renderDueSummary();
   renderService();
   renderHistory();
+  refreshTireUI();
 }
 
+/* ---------- SETTINGS: TIRE MANUFACTURE DATE ----------
+   The tire replacement clock runs from the DOT manufacture date, not the
+   install date, so it's set here rather than by the service card's Done
+   button. Writing lastDate on the schedule record syncs like any other edit. */
+const TIRE_ITEM = 'Tires (replace)';
+function refreshTireUI(){
+  const input = $('#tire-mfg');
+  if (document.activeElement === input) return; // mid-edit; don't stomp
+  const t = state.schedule.find(x => x.item === TIRE_ITEM);
+  input.value = t ? t.lastDate : '';
+  input.disabled = !t;
+}
+$('#tire-mfg').addEventListener('change', () => {
+  const t = state.schedule.find(x => x.item === TIRE_ITEM);
+  const v = $('#tire-mfg').value;
+  if (!t || !v){ refreshTireUI(); return; } // cleared or no record: revert
+  t.lastDate = v;
+  t.updatedAt = Date.now();
+  saveState();
+  render();
+});
+
 function renderDueSummary(){
-  const all = state.schedule.map(s => ({s, st: svcStatus(s)}))
+  const all = activeSchedule().map(s => ({s, st: svcStatus(s)}))
     .sort((a,b) => b.st.pct - a.st.pct);
   const onHorizon = ({st}) => st.overdue ||
     (st.miLeft !== null && st.miLeft <= state.showAtMi) ||
@@ -416,8 +478,74 @@ function renderDueSummary(){
   // everything within the threshold, with a floor of three so the section never empties
   const items = all.filter((x, i) => i < 3 || onHorizon(x));
   $('#due-summary').innerHTML = items.map(({s,st}) => svcCard(s, st, false)).join('');
-  const anyWarn = state.schedule.some(s => svcStatus(s).warn);
+  const anyWarn = activeSchedule().some(s => svcStatus(s).warn);
   $('#tab-service .dot').style.setProperty('--badge', anyWarn ? 'block' : 'none');
+}
+
+/* What each service involves, from the Honda service manual maintenance
+   schedule (p. 3-3). Reference data, not rider data, so it lives here rather
+   than in synced state. star 1 = Honda's "dealer unless you have the tools
+   and skills"; star 2 = "dealer only, in the interest of safety". */
+const SVC_DETAILS = {
+  'Chain clean & lube': [
+    {t:'Inspect chain slack, wear, and alignment'},
+    {t:'Clean and lubricate the chain'},
+  ],
+  'Engine oil': [
+    {t:'Replace engine oil'},
+  ],
+  'Engine oil filter': [
+    {t:'Replace the oil filter cartridge'},
+  ],
+  '4,000-mi check': [
+    {t:'Crankcase breather: clean (sooner if ridden in rain or at full throttle)'},
+    {t:'Brake fluid: inspect level and condition'},
+    {t:'Brake pads: inspect wear'},
+    {t:'Clutch system: inspect operation and free play'},
+  ],
+  '8,000-mi inspection': [
+    {t:'Fuel line: inspect', star:1},
+    {t:'Throttle operation: inspect', star:1},
+    {t:'Engine idle speed: inspect', star:1},
+    {t:'Radiator coolant: inspect level'},
+    {t:'Cooling system: inspect for leaks', star:1},
+    {t:'Brake system: inspect'},
+    {t:'Brake light switch: inspect'},
+    {t:'Headlight aim: inspect'},
+    {t:'Side stand: inspect'},
+    {t:'Suspension: inspect', star:1},
+    {t:'Nuts, bolts, fasteners: check tightness', star:1},
+    {t:'Wheels/tires: inspect', star:2},
+    {t:'Steering head bearings: inspect', star:2},
+  ],
+  'Air cleaner': [
+    {t:'Replace the air cleaner element (sooner in wet or dusty areas)'},
+  ],
+  '16,000-mi service': [
+    {t:'Spark plug: replace', star:2},
+    {t:'Valve clearance: inspect and adjust', star:2},
+    {t:'Secondary air supply system: inspect', star:1},
+    {t:'Evaporative emission control system: inspect', star:1},
+  ],
+  'Brake fluid (replace)': [
+    {t:'Replace brake fluid (requires mechanical skill)'},
+  ],
+  'Coolant (replace)': [
+    {t:'Replace radiator coolant (requires mechanical skill)'},
+  ],
+  'Tires (replace)': [
+    {t:'Replace both tires regardless of tread; age limit from the DOT date', star:2},
+    {t:'Update the tire manufacture date in Settings after fitting'},
+  ],
+};
+const PILL_LABELS = {1:'Maybe dealer', 2:'Should be dealer'};
+
+function svcTaskList(item){
+  const tasks = SVC_DETAILS[item];
+  if (!tasks) return '';
+  return `<ul class="svc-tasks">` + tasks.map(x =>
+    `<li><span>${esc(x.t)}</span>${x.star ? `<span class="svc-pill${x.star === 2 ? ' strong' : ''}">${PILL_LABELS[x.star]}</span>` : ''}</li>`
+  ).join('') + `</ul>`;
 }
 
 function svcCard(s, st, actionable){
@@ -430,14 +558,14 @@ function svcCard(s, st, actionable){
     </div>
     <div class="gauge"><i class="${st.warn ? 'warn' : ''}" style="width:${Math.round(st.pct*100)}%"></i></div>
     <div class="svc-sub"><span>${subL}</span><span>${subR}</span></div>
-    ${actionable ? `<div class="svc-actions"><div class="row">
+    ${actionable ? `<div class="svc-actions">${svcTaskList(s.item)}<div class="row">
         <button class="primary" data-done="${esc(s.item)}">Done today at ${fmtMi(currentOdo())} miles</button>
       </div></div>` : ''}
   </div>`;
 }
 
 function renderService(){
-  const sorted = [...state.schedule].map(s => ({s, st: svcStatus(s)}))
+  const sorted = activeSchedule().map(s => ({s, st: svcStatus(s)}))
     .sort((a,b) => b.st.pct - a.st.pct);
   $('#svc-list').innerHTML = sorted.map(({s,st}) => svcCard(s, st, true)).join('');
 }
@@ -767,6 +895,7 @@ async function syncNow(){
     try{ const r = JSON.parse(remoteText); if (r && Array.isArray(r.rides)) remote = r; }catch{}
     // 2. Merge remote into local
     if (remote) state = mergeStates(state, remote);
+    migrateState(state); // in case another device pushed the old interval back
     // Seed a fresh account, or upgrade an older seed (adds the real history
     // and retires the original demo rides via tombstones).
     if ((state.seedVersion || 0) < SEED_VERSION) state = mergeStates(state, seedState());
@@ -901,7 +1030,7 @@ function registerSW(){
 
 /* ---------- BOOT ---------- */
 function boot(){
-  state = loadState() || emptyState();
+  state = migrateState(loadState() || emptyState());
   applySkin(skin);
   render();
   refreshSyncUI();              // gate stays up until the first sync succeeds

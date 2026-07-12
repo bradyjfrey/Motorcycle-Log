@@ -248,6 +248,20 @@
     display:flex; justify-content:space-between;}
   .svc-actions{margin-top:10px; display:none;}
   .svc.open .svc-actions{display:block;}
+  .svc-tasks{list-style:none; margin:2px 0 12px; padding:0;}
+  .svc-tasks li{
+    display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+    padding:7px 0; font-size:.84rem; color:var(--dim); line-height:1.4;
+    border-bottom:1px solid var(--card-line);
+  }
+  .svc-tasks li:last-child{border-bottom:0;}
+  .svc-pill{
+    flex:none; font-family:var(--font-meta); font-size:.62rem; font-weight:600;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+    padding:3px 8px; border-radius:999px;
+    color:var(--dim); border:1px solid var(--line);
+  }
+  .svc-pill.strong{color:var(--warn); border-color:currentColor;}
   .svc-actions button{
     background:var(--panel-2); color:var(--text); border:1px solid var(--line);
     border-radius:9px; padding:9px 14px; font-family:var(--font-ui);
