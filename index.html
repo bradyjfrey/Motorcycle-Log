@@ -302,20 +302,20 @@ function seedState(){
     services: [
       {id:'seed-s-2026-04-02', date:'2026-04-02', odo:685, item:'600-mi service · Fremont Honda', updatedAt:SEED_TS},
     ],
-    /* mode 'milestone': due at the next multiple of everyMi above lastOdo (Honda note *1).
-       mode 'rolling': due everyMi after lastOdo. Time intervals always run from lastDate. */
+    /* Mile intervals run from lastOdo (checkpoint bundles anchor to odometer
+       multiples instead; see MILESTONE_ITEMS), time intervals from lastDate. */
     schedule: [
-      {item:'Chain clean & lube',      mode:'rolling',   everyMi:600,   everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
-      {item:'Engine oil',              mode:'milestone', everyMi:8000,  everyMo:12,   lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
-      {item:'Engine oil filter',       mode:'milestone', everyMi:16000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
-      {item:'4,000-mi check',          mode:'milestone', everyMi:4000,  everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
-      {item:'8,000-mi inspection',     mode:'milestone', everyMi:8000,  everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
-      {item:'Air cleaner',             mode:'milestone', everyMi:12000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
-      {item:'16,000-mi service',       mode:'milestone', everyMi:16000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
-      {item:'Brake fluid (replace)',   mode:'rolling',   everyMi:null,  everyMo:24,   lastOdo:0,   lastDate:'2025-07-12', updatedAt:SEED_TS},
-      {item:'Coolant (replace)',       mode:'rolling',   everyMi:null,  everyMo:36,   lastOdo:0,   lastDate:'2025-07-12', updatedAt:SEED_TS},
+      {item:'Chain clean & lube',      everyMi:600,   everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'Engine oil',              everyMi:8000,  everyMo:12,   lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'Engine oil filter',       everyMi:16000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'4,000-mi check',          everyMi:4000,  everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'8,000-mi inspection',     everyMi:8000,  everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'Air cleaner',             everyMi:12000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'16,000-mi service',       everyMi:16000, everyMo:null, lastOdo:685, lastDate:'2026-04-02', updatedAt:SEED_TS},
+      {item:'Brake fluid (replace)',   everyMi:null,  everyMo:24,   lastOdo:0,   lastDate:'2025-07-12', updatedAt:SEED_TS},
+      {item:'Coolant (replace)',       everyMi:null,  everyMo:36,   lastOdo:0,   lastDate:'2025-07-12', updatedAt:SEED_TS},
       /* Tire age runs from DOT manufacture date (week 8 of 2025), not purchase. */
-      {item:'Tires (replace)',         mode:'rolling',   everyMi:null,  everyMo:48,   lastOdo:0,   lastDate:'2025-02-17', updatedAt:SEED_TS},
+      {item:'Tires (replace)',         everyMi:null,  everyMo:48,   lastOdo:0,   lastDate:'2025-02-17', updatedAt:SEED_TS},
     ],
     warnAtMi: 100,   // turns orange within this many miles of due
     warnAtDays: 14,  // or within this many days
@@ -328,7 +328,9 @@ function seedState(){
 /* Blank slate for a device that hasn't synced yet. The seed is applied only
    on the account's very first sync (see syncNow), never shown to a visitor. */
 function emptyState(){
-  return {...seedState(), rides:[], services:[], schedule:[], updatedAt:0};
+  // seedVersion 0, not the seed's own: a brand-new account must fail the
+  // seedVersion check in syncNow so its very first sync applies the seed.
+  return {...seedState(), rides:[], services:[], schedule:[], seedVersion:0, updatedAt:0};
 }
 
 /* ---------- PERSISTENCE ---------- */
@@ -355,7 +357,7 @@ function migrateState(s){
   // Clock starts at the DOT manufacture date (week 8 of 2025), not purchase.
   // Only added to a real account's schedule, never to the blank pre-sync state.
   if (s.schedule.length && !s.schedule.some(x => x.item === 'Tires (replace)')){
-    s.schedule.push({item:'Tires (replace)', mode:'rolling', everyMi:null, everyMo:48, lastOdo:0, lastDate:'2025-02-17', updatedAt: Date.now()});
+    s.schedule.push({item:'Tires (replace)', everyMi:null, everyMo:48, lastOdo:0, lastDate:'2025-02-17', updatedAt: Date.now()});
   }
   // The 16k-only emission checks (secondary air, evap) belong with the spark
   // plug service, so that item becomes the full 16,000-mi service. Renaming a
@@ -364,7 +366,7 @@ function migrateState(s){
   const sp = s.schedule.find(x => x.item === 'Spark plug & valves' && !x.deleted);
   if (sp){
     if (!s.schedule.some(x => x.item === '16,000-mi service')){
-      s.schedule.push({item:'16,000-mi service', mode:sp.mode, everyMi:sp.everyMi,
+      s.schedule.push({item:'16,000-mi service', everyMi:sp.everyMi,
         everyMo:sp.everyMo, lastOdo:sp.lastOdo, lastDate:sp.lastDate, updatedAt: Date.now()});
     }
     sp.deleted = true;
@@ -395,18 +397,27 @@ function recomputeTrips(){
   for(let i = 1; i < rs.length; i++) rs[i].trip = rs[i].odo - rs[i-1].odo;
 }
 
+/* The checkpoint bundles anchor to odometer multiples like a dealer's
+   service menu; every other mileage item is a consumable whose clock
+   restarts at the service itself. Code-side like SVC_DETAILS, so the stored
+   (legacy, ignored) mode field never needs migrating. */
+const MILESTONE_ITEMS = new Set(['4,000-mi check', '8,000-mi inspection', '16,000-mi service']);
+
 /* Status for each schedule item: returns {dueLabel, pct, warn, overdue, ...} */
 function svcStatus(s){
   const odo = currentOdo();
   let pctMi = null, miLeft = null;
   if (s.everyMi){
     let dueOdo;
-    if (s.mode === 'milestone'){
-      // next multiple of everyMi strictly above lastOdo (Honda manual note *1)
-      dueOdo = (Math.floor(s.lastOdo / s.everyMi) + 1) * s.everyMi;
-      const start = dueOdo - s.everyMi;
-      pctMi = Math.min(1, Math.max(0, (odo - start) / s.everyMi));
+    if (MILESTONE_ITEMS.has(s.item)){
+      // The service counts against the multiple it happened nearest: done at
+      // 7,900 it was the 8k service and the next is due at 16,000. Off-anchor
+      // drift is bounded at half an interval and never compounds.
+      dueOdo = (Math.round(s.lastOdo / s.everyMi) + 1) * s.everyMi;
+      pctMi = Math.min(1, Math.max(0, (odo - (dueOdo - s.everyMi)) / s.everyMi));
     } else {
+      // Consumables: an oil change at 590 is good for another 600 miles, so
+      // the clock restarts at the service, not at an odometer multiple.
       dueOdo = s.lastOdo + s.everyMi;
       pctMi = Math.min(1, Math.max(0, (odo - s.lastOdo) / s.everyMi));
     }
@@ -528,10 +539,10 @@ const SVC_DETAILS = {
     {t:'Evaporative emission control system: inspect', star:1},
   ],
   'Brake fluid (replace)': [
-    {t:'Replace brake fluid (requires mechanical skill)'},
+    {t:'Replace brake fluid'},
   ],
   'Coolant (replace)': [
-    {t:'Replace radiator coolant (requires mechanical skill)'},
+    {t:'Replace radiator coolant'},
   ],
   'Tires (replace)': [
     {t:'Replace both tires regardless of tread; age limit from the DOT date', star:2},
@@ -558,7 +569,7 @@ function svcCard(s, st, actionable){
     </div>
     <div class="gauge"><i class="${st.warn ? 'warn' : ''}" style="width:${Math.round(st.pct*100)}%"></i></div>
     <div class="svc-sub"><span>${subL}</span><span>${subR}</span></div>
-    ${actionable ? `<div class="svc-actions">${svcTaskList(s.item)}<div class="row">
+    ${actionable ? `${svcTaskList(s.item)}<div class="svc-actions"><div class="row">
         <button class="primary" data-done="${esc(s.item)}">Done today at ${fmtMi(currentOdo())} miles</button>
       </div></div>` : ''}
   </div>`;

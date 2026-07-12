@@ -248,20 +248,22 @@
     display:flex; justify-content:space-between;}
   .svc-actions{margin-top:10px; display:none;}
   .svc.open .svc-actions{display:block;}
-  .svc-tasks{list-style:none; margin:2px 0 12px; padding:0;}
+  /* Always-visible task list; type mirrors the .svc-sub interval line
+     (size and color) but never the skins' uppercase treatment. */
+  .svc-tasks{list-style:disc; margin:9px 0 0; padding-left:18px;}
   .svc-tasks li{
-    display:flex; align-items:baseline; justify-content:space-between; gap:10px;
-    padding:7px 0; font-size:.84rem; color:var(--dim); line-height:1.4;
-    border-bottom:1px solid var(--card-line);
+    padding:2px 0; font-size:.8rem; color:var(--faint); line-height:1.45;
+    text-transform:none; letter-spacing:normal;
   }
-  .svc-tasks li:last-child{border-bottom:0;}
+  .svc-tasks li::marker{color:var(--faint);}
+  /* Dealer tags: filled with the same color as the service meter's bar. */
   .svc-pill{
-    flex:none; font-family:var(--font-meta); font-size:.62rem; font-weight:600;
-    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
-    padding:3px 8px; border-radius:999px;
-    color:var(--dim); border:1px solid var(--line);
+    display:inline-block; margin-left:6px; font-family:var(--font-meta);
+    font-size:.62rem; font-weight:600; letter-spacing:.08em;
+    text-transform:uppercase; white-space:nowrap;
+    padding:2px 5px; border-radius:4px;
+    background:var(--gauge); color:var(--panel);
   }
-  .svc-pill.strong{color:var(--warn); border-color:currentColor;}
   .svc-actions button{
     background:var(--panel-2); color:var(--text); border:1px solid var(--line);
     border-radius:9px; padding:9px 14px; font-family:var(--font-ui);
